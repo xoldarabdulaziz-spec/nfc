@@ -230,6 +230,9 @@ body{
 .field-sub.invalid{ border-color:var(--danger); box-shadow:0 0 0 3px rgba(240,85,106,.14); }
 .sub-err{ display:none; color:var(--danger); font-size:12.5px; font-weight:600; line-height:1.45; margin-top:8px; }
 .sub-err.show{ display:block; }
+.field-sub.valid{ border-color:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,.14); }
+.sub-ok{ display:none; align-items:center; gap:6px; color:#34d399; font-size:12.5px; font-weight:600; margin-top:8px; }
+.sub-ok.show{ display:flex; }
 .btn-primary:disabled{ opacity:.45; cursor:not-allowed; filter:none; }
 .swatches{ display:flex; gap:9px; flex-wrap:wrap; }
 .swatch{ width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid transparent; padding:0; }
@@ -370,6 +373,10 @@ body{
         </div>
         <div class="m-preview">Your site URL: <b id="m-preview">nfc.card.com</b></div>
         <div class="sub-err" id="m-sub-error">This URL has already been taken. You cannot create a site with this URL. Please choose a different subdomain.</div>
+        <div class="sub-ok" id="m-sub-ok">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <span id="m-ok-text">This subdomain is available</span>
+        </div>
 
         <label class="m-label" for="m-link">Open link (where “View” goes)</label>
         <input id="m-link" class="m-input" placeholder="https://…  or  index.html" autocomplete="off" />
@@ -419,13 +426,32 @@ function isTaken(sub){
   const domain = sub + DOMAIN_SUFFIX;
   return sites.some(s => s.id !== editingId && String(s.domain).toLowerCase() === domain.toLowerCase());
 }
-/* live: show the red "already taken" error and keep Save disabled until unique */
+/* live validation: red "already taken" / green "available", and Save enable/disable */
 function checkSubdomain(){
   const sub   = sanitizeSub(document.getElementById('m-domain').value);
-  const taken = !!sub && isTaken(sub);
-  document.getElementById('m-sub-error').classList.toggle('show', taken);
-  document.querySelector('.field-sub').classList.toggle('invalid', taken);
-  document.getElementById('saveBtn').disabled = taken || !sub;   // disabled until a unique, non-empty subdomain
+  const field = document.querySelector('.field-sub');
+  const errEl = document.getElementById('m-sub-error');
+  const okEl  = document.getElementById('m-sub-ok');
+  const btn   = document.getElementById('saveBtn');
+
+  if(!sub){                              // empty -> neutral, Save disabled
+    errEl.classList.remove('show'); okEl.classList.remove('show');
+    field.classList.remove('invalid','valid');
+    btn.disabled = true;
+    return;
+  }
+  const taken = isTaken(sub);
+  if(taken){                             // taken -> red error, Save disabled
+    document.getElementById('m-ok-text').textContent = '';
+    okEl.classList.remove('show'); field.classList.remove('valid');
+    errEl.classList.add('show');         field.classList.add('invalid');
+    btn.disabled = true;
+  } else {                               // available -> green success, Save enabled
+    errEl.classList.remove('show'); field.classList.remove('invalid');
+    document.getElementById('m-ok-text').textContent = sub + DOMAIN_SUFFIX + ' is available';
+    okEl.classList.add('show');          field.classList.add('valid');
+    btn.disabled = false;
+  }
 }
 function onSubInput(){ updatePreview(); checkSubdomain(); }
 
