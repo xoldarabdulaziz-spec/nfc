@@ -362,9 +362,9 @@ body{
         <div class="field-sub">
           <input id="m-domain" class="sub-input" placeholder="nfc" autocomplete="off"
                  spellcheck="false" oninput="updatePreview()" />
-          <span class="suffix" id="m-suffix">.com</span>
+          <span class="suffix" id="m-suffix">.card.com</span>
         </div>
-        <div class="m-preview">Your site URL: <b id="m-preview">nfc.com</b></div>
+        <div class="m-preview">Your site URL: <b id="m-preview">nfc.card.com</b></div>
 
         <label class="m-label" for="m-link">Open link (where “View” goes)</label>
         <input id="m-link" class="m-input" placeholder="https://…  or  index.html" autocomplete="off" />
@@ -394,12 +394,12 @@ const USER_EMAIL = "xoldar.abdulaziz@gmail.com";
 const STORE_KEY  = "dot_sites";   // user's saved sites live here (per browser)
 
 /* default cards shown on first ever visit */
-const DOMAIN_SUFFIX = ".com";   // every site URL becomes <subdomain>.com
+const DOMAIN_SUFFIX = ".card.com";   // every site URL becomes <subdomain>.card.com
 
 const DEFAULT_SITES = [
-  { id:"nfc",   name:"NFC Card",     domain:"nfc.com",         link:"index.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
-  { id:"ava",   name:"AVA STORE",    domain:"avastore.com",    link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
-  { id:"press", name:"Studio Press", domain:"studiopress.com", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
+  { id:"nfc",   name:"NFC Card",     domain:"nfc.card.com",         link:"index.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
+  { id:"ava",   name:"AVA STORE",    domain:"avastore.card.com",    link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
+  { id:"press", name:"Studio Press", domain:"studiopress.card.com", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
 ];
 
 /* turn whatever the user typed into a safe subdomain label */
