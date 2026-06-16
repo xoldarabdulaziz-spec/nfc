@@ -264,9 +264,14 @@ body{
     <!-- ===================== SIDEBAR ===================== -->
     <aside class="sidebar">
 
-      <!-- LOGO SLOT (top-left). Replace the <svg> with <img src="logo.png" class="logo-img"> later. -->
-      <div class="logo" title="NFC">
-        <svg viewBox="0 0 48 48" aria-label="NFC logo">
+      <!-- LOGO SLOT (top-left).
+           Put your logo image in this same folder and name it exactly:  logo.png
+           (or change the src below to your file name / .svg / .jpg).
+           If the file is missing, the NFC mark is shown as a fallback. -->
+      <div class="logo" title="Logo">
+        <img src="logo.png" class="logo-img" alt="Logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <svg viewBox="0 0 48 48" aria-label="NFC logo" style="display:none">
           <path d="M24 6C14.6 6 7 13.2 7 22.2c0 6.4 3.9 12 9.6 14.7" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/>
           <path d="M24 42c9.4 0 17-7.2 17-16.2 0-6.4-3.9-12-9.6-14.7" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/>
           <path d="M17.5 31V17l13 15V18" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
