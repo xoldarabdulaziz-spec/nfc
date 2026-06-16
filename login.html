@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>Log In · dot.</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+/* =========================================================================
+   LOGIN PAGE  ·  dot.cards-style  (light theme)
+   --------------------------------------------------------------------------
+   • On valid credentials  -> redirects to index.html (home/dashboard)
+   • On invalid            -> shows "Invalid email or password"
+   NOTE: this is a front-end / demo login. Client-side credential checks are
+   NOT secure (anyone can read them in the source). For real protection the
+   check must happen on a server. Swap the values in the AUTH object below.
+   ========================================================================= */
+
+:root{
+  --ink:      #1b1b1f;   /* near-black text         */
+  --muted:    #8a8f98;   /* gray text/placeholder   */
+  --teal:     #36b3c4;   /* accent (the "Login" word)*/
+  --line:     #e6e7ea;   /* hairline borders        */
+  --field:    #fbfbfc;   /* input background        */
+  --btn:      #2e2e30;   /* dark login button       */
+  --danger:   #e0413f;   /* error text              */
+  --radius:   14px;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; height:100%; }
+
+body{
+  font-family:'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color:var(--ink);
+  background:#ffffff;
+  display:flex; justify-content:center;
+}
+
+/* thin peach progress line at the very top (like the reference) */
+body::before{
+  content:""; position:fixed; top:0; left:0; right:0; height:3px; z-index:10;
+  background:linear-gradient(90deg,#ffd9b0,#ffb27a,#ff8f6b);
+}
+
+/* phone-width centered column */
+.page{
+  width:100%; max-width:460px;
+  min-height:100dvh;
+  display:flex; flex-direction:column;
+  border-left:1px solid var(--line);
+  border-right:1px solid var(--line);
+}
+
+/* ---------- header: dot. wordmark ---------- */
+.brandbar{
+  height:56px; display:grid; place-items:center;
+  border-bottom:1px solid var(--line);
+  font-weight:700; font-size:20px; letter-spacing:-.01em;
+}
+.brandbar .d{ color:var(--ink); }
+
+/* ---------- content ---------- */
+.content{ flex:1; display:flex; flex-direction:column; padding:18px 22px 24px; }
+
+.back{
+  width:42px; height:42px; border-radius:50%;
+  border:1px solid var(--line); background:#fff;
+  display:grid; place-items:center; cursor:pointer;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  transition:.15s;
+}
+.back:hover{ background:#f6f6f7; }
+.back:active{ transform:scale(.94); }
+
+.title{ text-align:center; font-size:26px; font-weight:700; margin:-30px 0 6px; }
+.subtitle{ text-align:center; font-size:14.5px; color:var(--muted); margin:0 0 26px; }
+.subtitle .teal{ color:var(--teal); font-weight:500; }
+
+/* ---------- card ---------- */
+.card{
+  background:#fff; border:1px solid var(--line); border-radius:18px;
+  padding:20px 18px 6px;
+  box-shadow:0 8px 26px rgba(20,20,30,.06);
+}
+
+.field{ margin-bottom:18px; }
+.label{ font-size:13.5px; font-weight:600; margin-bottom:8px; }
+
+.input-wrap{ position:relative; display:flex; align-items:center; }
+.input-wrap input{
+  width:100%; font-family:inherit; font-size:15px; color:var(--ink);
+  background:var(--field); border:1px solid var(--line); border-radius:var(--radius);
+  padding:13px 44px 13px 14px; outline:none; transition:.15s;
+}
+.input-wrap input::placeholder{ color:#b3b7bd; }
+.input-wrap input:focus{ border-color:var(--teal); background:#fff; box-shadow:0 0 0 3px rgba(54,179,196,.12); }
+
+.in-icon{
+  position:absolute; right:10px; width:30px; height:30px;
+  display:grid; place-items:center; color:var(--muted);
+  background:none; border:none; cursor:pointer; padding:0;
+}
+.in-icon:active{ transform:scale(.9); }
+
+/* error message */
+.error{
+  display:none; align-items:center; gap:7px;
+  color:var(--danger); font-size:13px; font-weight:500;
+  margin:2px 2px 14px;
+}
+.error.show{ display:flex; }
+.error svg{ flex:0 0 auto; }
+
+/* forgot password */
+.forgot{
+  display:flex; justify-content:flex-end; align-items:center; gap:6px;
+  margin:14px 2px 0; font-size:13.5px; font-weight:600; color:var(--ink);
+  text-decoration:none;
+}
+.forgot:hover{ color:var(--teal); }
+
+/* ---------- login button (pinned to bottom) ---------- */
+.login-btn{
+  margin-top:auto;
+  width:100%; height:56px; border:none; border-radius:14px; cursor:pointer;
+  background:var(--btn); color:#fff; font-family:inherit; font-size:16px; font-weight:600;
+  letter-spacing:.01em; transition:.15s;
+  box-shadow:0 8px 20px rgba(46,46,48,.28);
+}
+.login-btn:hover{ background:#1f1f21; }
+.login-btn:active{ transform:translateY(1px); }
+.login-btn:disabled{ opacity:.6; cursor:default; }
+</style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- header -->
+    <div class="brandbar"><span class="d">dot<span>.</span></span></div>
+
+    <form class="content" id="loginForm" novalidate autocomplete="on">
+
+      <!-- back -->
+      <button type="button" class="back" aria-label="Back" onclick="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      </button>
+
+      <h1 class="title">Log In</h1>
+      <p class="subtitle"><span class="teal">Login</span> to your account to start networking.</p>
+
+      <!-- card -->
+      <div class="card">
+
+        <!-- email -->
+        <div class="field">
+          <div class="label">Email</div>
+          <div class="input-wrap">
+            <input id="email" type="email" name="email" inputmode="email"
+                   placeholder="xoldar.abdulaziz@gmail.com" autocomplete="username" />
+            <button type="button" class="in-icon" tabindex="-1" aria-label="Edit email" onclick="document.getElementById('email').focus()">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- password -->
+        <div class="field">
+          <div class="label">Password</div>
+          <div class="input-wrap">
+            <input id="password" type="password" name="password"
+                   placeholder="password" autocomplete="current-password" />
+            <button type="button" class="in-icon" id="eyeBtn" aria-label="Show password" onclick="togglePw()">
+              <svg id="eyeIcon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18" id="eyeSlash"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- error -->
+      <div class="error" id="error" role="alert">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/></svg>
+        <span>Invalid email or password</span>
+      </div>
+
+      <!-- forgot -->
+      <a href="#" class="forgot" onclick="return false;">Forgot Password?
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+
+      <!-- submit -->
+      <button type="submit" class="login-btn" id="loginBtn">Log In</button>
+    </form>
+  </div>
+
+<script>
+/* ---- credentials (front-end demo only) ---- */
+const AUTH = {
+  email:    "xoldar.abdulaziz@gmail.com",
+  password: "$Abdu$.2008"
+};
+const HOME = "index.html"; // where to go after a successful login
+
+const form  = document.getElementById('loginForm');
+const errEl = document.getElementById('error');
+const btn   = document.getElementById('loginBtn');
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const pass  = document.getElementById('password').value;
+
+  // case-insensitive email match, exact password
+  const ok = email.toLowerCase() === AUTH.email.toLowerCase() && pass === AUTH.password;
+
+  if(ok){
+    errEl.classList.remove('show');
+    btn.textContent = "Logging in…";
+    btn.disabled = true;
+    try{ localStorage.setItem('dot_logged_in','1'); }catch(_){}
+    setTimeout(()=>{ window.location.href = HOME; }, 450);
+  } else {
+    errEl.classList.add('show');
+    btn.animate(
+      [{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],
+      {duration:240}
+    );
+  }
+});
+
+// hide the error as soon as the user edits a field
+['email','password'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', ()=> errEl.classList.remove('show'));
+});
+
+/* show / hide password */
+function togglePw(){
+  const pw = document.getElementById('password');
+  const slash = document.getElementById('eyeSlash');
+  const showing = pw.type === 'text';
+  pw.type = showing ? 'password' : 'text';
+  slash.style.display = showing ? '' : 'none'; // hide the slash when password is visible
+  document.getElementById('eyeBtn').setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+}
+
+function goBack(){
+  if(history.length > 1) history.back();
+  else window.location.href = HOME;
+}
+</script>
+</body>
+</html>
