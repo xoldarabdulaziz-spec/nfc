@@ -192,6 +192,51 @@ body{
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
+/* =====================  MODAL (add / edit site)  ===================== */
+.modal-overlay{
+  position:fixed; inset:0; z-index:80; display:none;
+  align-items:center; justify-content:center; padding:18px;
+  background:rgba(8,10,14,.62); backdrop-filter:blur(3px);
+}
+.modal-overlay.show{ display:flex; }
+.modal{
+  width:100%; max-width:440px; background:var(--card);
+  border:1px solid var(--line-2); border-radius:18px; box-shadow:var(--shadow);
+  padding:20px; animation:pop .18s ease;
+}
+@keyframes pop{ from{ transform:translateY(10px) scale(.98); opacity:0; } to{ transform:none; opacity:1; } }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.modal-head h3{ margin:0; font-size:18px; font-weight:800; letter-spacing:-.01em; }
+.modal-x{
+  width:34px; height:34px; border-radius:9px; cursor:pointer;
+  border:1px solid var(--line); background:none; color:var(--muted);
+  display:grid; place-items:center;
+}
+.modal-x:hover{ background:var(--card-2); color:var(--text); }
+.m-label{ display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin:14px 0 6px; }
+.m-input{
+  width:100%; font-family:inherit; font-size:14.5px; color:var(--text);
+  background:var(--bg); border:1px solid var(--line); border-radius:10px;
+  padding:11px 12px; outline:none; transition:.15s;
+}
+.m-input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(45,212,191,.14); }
+.swatches{ display:flex; gap:9px; flex-wrap:wrap; }
+.swatch{ width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid transparent; padding:0; }
+.swatch.sel{ border-color:#fff; box-shadow:0 0 0 2px var(--card), 0 0 0 4px rgba(255,255,255,.25); }
+.m-error{ display:none; color:var(--danger); font-size:13px; font-weight:600; margin-top:12px; }
+.m-error.show{ display:block; }
+.modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.btn-ghost{
+  padding:10px 16px; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:600;
+  background:none; border:1px solid var(--line-2); color:var(--text);
+}
+.btn-ghost:hover{ background:var(--card-2); }
+.btn-primary{
+  padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-family:inherit; font-weight:700;
+  color:#07221f; background:linear-gradient(135deg,var(--teal),var(--teal-2));
+}
+.btn-primary:hover{ filter:brightness(1.06); }
+
 /* =====================  RESPONSIVE  ===================== */
 @media (max-width:760px){
   .app{ flex-direction:column; }
@@ -275,7 +320,7 @@ body{
             </button>
           </div>
 
-          <button class="new-site" onclick="toast('New Site — coming soon')">
+          <button class="new-site" onclick="openModal()">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             New Site
           </button>
@@ -287,6 +332,39 @@ body{
     </main>
   </div>
 
+  <!-- ===================== ADD / EDIT SITE MODAL ===================== -->
+  <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="modal-head">
+        <h3 id="mTitle">Add new site</h3>
+        <button class="modal-x" onclick="closeModal()" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <form id="siteForm" onsubmit="saveSite(event)" novalidate>
+        <label class="m-label" for="m-name">Site name</label>
+        <input id="m-name" class="m-input" placeholder="My new site" autocomplete="off" />
+
+        <label class="m-label" for="m-domain">Domain / URL label</label>
+        <input id="m-domain" class="m-input" placeholder="mysite.carrd.co" autocomplete="off" />
+
+        <label class="m-label" for="m-link">Open link (where “View” goes)</label>
+        <input id="m-link" class="m-input" placeholder="https://…  or  index.html" autocomplete="off" />
+
+        <label class="m-label">Header color</label>
+        <div class="swatches" id="m-swatches"></div>
+
+        <div class="m-error" id="m-error">Please enter a site name</div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save site</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Done</div>
 
 <script>
@@ -295,71 +373,174 @@ body{
    • grad:  CSS gradient for the brand header
    • logo:  true -> show the NFC mark; otherwise the first letter is used
    ========================================================================= */
-const SITES = [
-  { name:"NFC Card",   domain:"yukitanaka.studio",     link:"index.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
-  { name:"AVA STORE",  domain:"avastore1.carrd.co",    link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
-  { name:"Studio Press",domain:"studiopress.carrd.co", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
+const USER_EMAIL = "xoldar.abdulaziz@gmail.com";
+const STORE_KEY  = "dot_sites";   // user's saved sites live here (per browser)
+
+/* default cards shown on first ever visit */
+const DEFAULT_SITES = [
+  { id:"nfc",   name:"NFC Card",     domain:"yukitanaka.studio",    link:"index.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
+  { id:"ava",   name:"AVA STORE",    domain:"avastore1.carrd.co",   link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
+  { id:"press", name:"Studio Press", domain:"studiopress.carrd.co", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
 ];
 
-const USER_EMAIL = "xoldar.abdulaziz@gmail.com";
+/* header-colour presets offered in the modal */
+const GRADS = [
+  "linear-gradient(135deg,#7c5cff,#ff5c8a)",
+  "linear-gradient(135deg,#3b82f6,#22d3ee)",
+  "linear-gradient(135deg,#f59e0b,#ef4444)",
+  "linear-gradient(135deg,#22c55e,#0ea5a5)",
+  "linear-gradient(135deg,#a855f7,#6366f1)",
+  "linear-gradient(135deg,#ec4899,#f43f5e)"
+];
 
-/* ---- simple auth guard: must be logged in (flag set by login.html) ---- */
-if (localStorage.getItem('dot_logged_in') !== '1') {
-  location.replace('login.html');
+/* ---- auth guard: no access to the dashboard without a successful login ---- */
+if (localStorage.getItem('dot_logged_in') !== '1') location.replace('login.html');
+
+/* ---- state (persisted in localStorage) ---- */
+let sites = loadSites();
+let editingId = null;          // null while adding, a site id while editing
+let selectedGrad = GRADS[0];
+
+function loadSites(){
+  try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(_){}
+  return DEFAULT_SITES.slice();
 }
+function persist(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){ } }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* ---- reusable icons ---- */
+/* ---- icons ---- */
 const ICONS = {
   edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>',
   copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/>',
   swap:'<path d="M7 7h11l-3-3M17 17H6l3 3"/>',
-  archive:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
+  trash:'<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
   pin:'<path d="M12 17v5M9 3h6l-1 7 3 3H7l3-3-1-7z"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.5-2-3.4-2.3 1a7.9 7.9 0 0 0-1.7-1l-.3-2.5h-4l-.3 2.5a7.9 7.9 0 0 0-1.7 1l-2.3-1-2 3.4L4.6 11a7.9 7.9 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7.9 7.9 0 0 0 1.7 1l.3 2.5h4l.3-2.5a7.9 7.9 0 0 0 1.7-1l2.3 1 2-3.4z"/>'
 };
 const NFC_MARK = '<svg viewBox="0 0 48 48" fill="none"><path d="M24 6C14.6 6 7 13.2 7 22.2c0 6.4 3.9 12 9.6 14.7" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/><path d="M24 42c9.4 0 17-7.2 17-16.2 0-6.4-3.9-12-9.6-14.7" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/><path d="M17.5 31V17l13 15V18" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-function actBtn(kind,label){
-  return `<button class="act" title="${label}" aria-label="${label}" onclick="toast('${label}')">
+function iconBtn(kind,label,handler){
+  return `<button class="act" title="${label}" aria-label="${label}" onclick="${handler}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[kind]}</svg></button>`;
 }
 
 /* ---- render cards ---- */
 function render(){
   const wrap = document.getElementById('sites');
-  wrap.innerHTML = SITES.map(s => {
-    const ava = s.logo ? NFC_MARK : s.name.trim().charAt(0).toUpperCase();
-    const target = s.link && s.link !== '#'
-        ? `href="${s.link}"`
-        : `href="#" onclick="toast('Opening ${s.name}…');return false;"`;
+  wrap.innerHTML = sites.map(s => {
+    const ava   = s.logo ? NFC_MARK : esc(s.name.trim().charAt(0).toUpperCase() || '?');
+    const real  = s.link && s.link !== '#';
+    const view  = real
+        ? `href="${esc(s.link)}"`
+        : `href="#" onclick="toast('Opening site…');return false;"`;
     return `
     <article class="card">
       <div class="card-head" style="background:${s.grad}">
         <div class="site-ava">${ava}</div>
       </div>
       <div class="card-body">
-        <div class="card-title">${s.name}</div>
-        <div class="card-domain">${s.domain}</div>
+        <div class="card-title">${esc(s.name)}</div>
+        <div class="card-domain">${esc(s.domain)}</div>
       </div>
       <div class="card-actions">
         <div class="act-icons">
-          ${actBtn('edit','Edit')}${actBtn('copy','Duplicate')}${actBtn('swap','Transfer')}
-          ${actBtn('archive','Archive')}${actBtn('pin','Pin')}${actBtn('gear','Settings')}
+          ${iconBtn('edit','Edit',`editSite('${s.id}')`)}
+          ${iconBtn('copy','Duplicate',`duplicateSite('${s.id}')`)}
+          ${iconBtn('swap','Transfer',`toast('Transfer')`)}
+          ${iconBtn('trash','Delete',`deleteSite('${s.id}')`)}
+          ${iconBtn('pin','Pin',`toast('Pinned')`)}
+          ${iconBtn('gear','Settings',`toast('Settings')`)}
         </div>
-        <a class="view-btn" ${target} ${s.link && s.link!=='#' ? 'target="_self"' : ''}>View</a>
+        <a class="view-btn" ${view}>View</a>
       </div>
     </article>`;
   }).join('');
-  document.getElementById('siteCount').textContent = `(${SITES.length})`;
+  document.getElementById('siteCount').textContent = `(${sites.length})`;
+}
+
+/* ================= ADD / EDIT / DELETE ================= */
+function openModal(id){
+  editingId = id || null;
+  const name = document.getElementById('m-name');
+  const dom  = document.getElementById('m-domain');
+  const link = document.getElementById('m-link');
+
+  if(editingId){
+    const s = sites.find(x => x.id === editingId) || {};
+    document.getElementById('mTitle').textContent = 'Edit site';
+    name.value = s.name || '';
+    dom.value  = s.domain || '';
+    link.value = (s.link && s.link !== '#') ? s.link : '';
+    selectedGrad = s.grad || GRADS[0];
+  } else {
+    document.getElementById('mTitle').textContent = 'Add new site';
+    name.value = ''; dom.value = ''; link.value = '';
+    selectedGrad = GRADS[Math.floor(Math.random()*GRADS.length)];
+  }
+  renderSwatches();
+  hideErr();
+  document.getElementById('modal').classList.add('show');
+  setTimeout(()=> name.focus(), 60);
+}
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+
+function renderSwatches(){
+  document.getElementById('m-swatches').innerHTML = GRADS.map(g =>
+    `<button type="button" class="swatch${g===selectedGrad ? ' sel':''}" style="background:${g}" onclick="pickGrad('${g}')" aria-label="colour"></button>`
+  ).join('');
+}
+function pickGrad(g){ selectedGrad = g; renderSwatches(); }
+
+function showErr(msg){ const e = document.getElementById('m-error'); e.textContent = msg; e.classList.add('show'); }
+function hideErr(){ document.getElementById('m-error').classList.remove('show'); }
+
+function saveSite(e){
+  e.preventDefault();
+  const name   = document.getElementById('m-name').value.trim();
+  const domain = document.getElementById('m-domain').value.trim();
+  let   link   = document.getElementById('m-link').value.trim();
+
+  if(!name){ showErr('Please enter a site name'); document.getElementById('m-name').focus(); return; }
+  if(!link) link = '#';
+
+  if(editingId){
+    const s = sites.find(x => x.id === editingId);
+    if(s){ s.name = name; s.domain = domain || s.domain; s.link = link; s.grad = selectedGrad; }
+    toast('Site updated');
+  } else {
+    sites.unshift({ id:'s'+Date.now(), name, domain: domain || 'untitled.site', link, grad:selectedGrad });
+    toast('Site added');
+  }
+  persist();
+  render();
+  closeModal();
+}
+
+function editSite(id){ openModal(id); }
+
+function duplicateSite(id){
+  const i = sites.findIndex(x => x.id === id);
+  if(i < 0) return;
+  const copy = Object.assign({}, sites[i], { id:'s'+Date.now(), name: sites[i].name + ' copy', logo:false });
+  sites.splice(i+1, 0, copy);
+  persist(); render(); toast('Duplicated');
+}
+
+function deleteSite(id){
+  const s = sites.find(x => x.id === id);
+  if(!s) return;
+  if(!confirm('Delete "'+s.name+'"? This cannot be undone.')) return;
+  sites = sites.filter(x => x.id !== id);
+  persist(); render(); toast('Site deleted');
 }
 
 /* ---- view switch (large grid / small grid / list) ---- */
 function setView(btn){
-  document.querySelectorAll('.vt').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.vt').forEach(v => v.classList.remove('active'));
   btn.classList.add('active');
-  const sites = document.getElementById('sites');
-  sites.classList.remove('grid-lg','grid-sm','list');
-  sites.classList.add(btn.dataset.view);
+  const el = document.getElementById('sites');
+  el.classList.remove('grid-lg','grid-sm','list');
+  el.classList.add(btn.dataset.view);
 }
 
 /* ---- profile menu + logout ---- */
@@ -375,8 +556,11 @@ let toastTimer;
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 1600);
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=> t.classList.remove('show'), 1600);
 }
+
+/* close modal on Escape */
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 
 /* ---- init ---- */
 document.getElementById('pemail').textContent = USER_EMAIL;
