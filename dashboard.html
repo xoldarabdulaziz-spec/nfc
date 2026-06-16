@@ -227,6 +227,10 @@ body{
 .field-sub .suffix{ display:flex; align-items:center; padding:0 13px; white-space:nowrap; color:var(--muted); font-size:14px; background:var(--card-2); border-left:1px solid var(--line); }
 .m-preview{ font-size:12.5px; color:var(--muted); margin-top:8px; }
 .m-preview b{ color:var(--teal); font-weight:700; }
+.field-sub.invalid{ border-color:var(--danger); box-shadow:0 0 0 3px rgba(240,85,106,.14); }
+.sub-err{ display:none; color:var(--danger); font-size:12.5px; font-weight:600; line-height:1.45; margin-top:8px; }
+.sub-err.show{ display:block; }
+.btn-primary:disabled{ opacity:.45; cursor:not-allowed; filter:none; }
 .swatches{ display:flex; gap:9px; flex-wrap:wrap; }
 .swatch{ width:34px; height:34px; border-radius:10px; cursor:pointer; border:2px solid transparent; padding:0; }
 .swatch.sel{ border-color:#fff; box-shadow:0 0 0 2px var(--card), 0 0 0 4px rgba(255,255,255,.25); }
@@ -361,10 +365,11 @@ body{
         <label class="m-label" for="m-domain">Subdomain</label>
         <div class="field-sub">
           <input id="m-domain" class="sub-input" placeholder="nfc" autocomplete="off"
-                 spellcheck="false" oninput="updatePreview()" />
+                 spellcheck="false" oninput="onSubInput()" />
           <span class="suffix" id="m-suffix">.card.com</span>
         </div>
         <div class="m-preview">Your site URL: <b id="m-preview">nfc.card.com</b></div>
+        <div class="sub-err" id="m-sub-error">This URL has already been taken. You cannot create a site with this URL. Please choose a different subdomain.</div>
 
         <label class="m-label" for="m-link">Open link (where “View” goes)</label>
         <input id="m-link" class="m-input" placeholder="https://…  or  index.html" autocomplete="off" />
@@ -376,7 +381,7 @@ body{
 
         <div class="modal-actions">
           <button type="button" class="btn-ghost" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn-primary">Save site</button>
+          <button type="submit" class="btn-primary" id="saveBtn">Save site</button>
         </div>
       </form>
     </div>
@@ -409,6 +414,20 @@ function updatePreview(){
   const sub = sanitizeSub(document.getElementById('m-domain').value) || 'your-site';
   document.getElementById('m-preview').textContent = sub + DOMAIN_SUFFIX;
 }
+/* is this subdomain already used by another site? */
+function isTaken(sub){
+  const domain = sub + DOMAIN_SUFFIX;
+  return sites.some(s => s.id !== editingId && String(s.domain).toLowerCase() === domain.toLowerCase());
+}
+/* live: show the red "already taken" error and keep Save disabled until unique */
+function checkSubdomain(){
+  const sub   = sanitizeSub(document.getElementById('m-domain').value);
+  const taken = !!sub && isTaken(sub);
+  document.getElementById('m-sub-error').classList.toggle('show', taken);
+  document.querySelector('.field-sub').classList.toggle('invalid', taken);
+  document.getElementById('saveBtn').disabled = taken || !sub;   // disabled until a unique, non-empty subdomain
+}
+function onSubInput(){ updatePreview(); checkSubdomain(); }
 
 /* header-colour presets offered in the modal */
 const GRADS = [
@@ -509,6 +528,7 @@ function openModal(id){
   }
   renderSwatches();
   updatePreview();
+  checkSubdomain();   // set initial Save-button / error state
   hideErr();
   document.getElementById('modal').classList.add('show');
   setTimeout(()=> name.focus(), 60);
@@ -533,9 +553,10 @@ function saveSite(e){
 
   if(!name){ showErr('Please enter a site name'); document.getElementById('m-name').focus(); return; }
   if(!sub) { showErr('Please enter a subdomain (e.g. nfc)'); document.getElementById('m-domain').focus(); return; }
+  if(isTaken(sub)){ checkSubdomain(); document.getElementById('m-domain').focus(); return; } // block duplicate URL
   if(!link) link = '#';
 
-  const domain = sub + DOMAIN_SUFFIX;   // e.g. nfc -> nfc.carrd.com
+  const domain = sub + DOMAIN_SUFFIX;   // e.g. nfc -> nfc.card.com
 
   if(editingId){
     const s = sites.find(x => x.id === editingId);
