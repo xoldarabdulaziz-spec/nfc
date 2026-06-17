@@ -258,7 +258,7 @@ function createCard(){
   // add a card to the dashboard list
   const sites = loadSites();
   sites.unshift({
-    id:'s'+Date.now(), name, domain: sub + DOMAIN_SUFFIX, link:'index.html',
+    id:'s'+Date.now(), name, domain: sub + DOMAIN_SUFFIX, link:'card.html',
     grad: GRADS[Math.floor(Math.random()*GRADS.length)]
   });
   try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){}

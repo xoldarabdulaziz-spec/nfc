@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<!-- Mobile-first: lock to device width, no zoom-jank, safe-area aware -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0e1117" />
+<title>Yuki Tanaka · NFC Card</title>
+
+<!-- Clean Google font (Plus Jakarta Sans = premium, geometric) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+/* =========================================================================
+   NFC DIGITAL BUSINESS CARD  ·  manga / anime themed (dot.cards style)
+   Single file · vanilla HTML/CSS/JS · no build step.
+   --------------------------------------------------------------------------
+   HOW TO CUSTOMISE LATER:
+   • Text  -> edit the visible strings in the markup below.
+   • Links -> edit the href / data values on each .link-card <a>.
+   • Colours -> tweak the CSS variables in :root.
+   • Images -> every illustration is an inline <svg> (search "ART:").
+   ========================================================================= */
+
+:root{
+  /* ---- core dark palette ---- */
+  --bg:        #0e1117;   /* page background            */
+  --bg-2:      #11151c;   /* deep panels                */
+  --card:      #161b24;   /* card surface               */
+  --card-2:    #1b2230;   /* card surface (hover)       */
+  --line:      rgba(255,255,255,.08); /* hairline border */
+  --line-2:    rgba(255,255,255,.14);
+
+  /* ---- text ---- */
+  --text:      #f4f6fb;
+  --muted:     #9aa3b2;
+  --faint:     #6b7587;
+
+  /* ---- manga accent ramp (kept identical across all art) ---- */
+  --violet:    #7c5cff;
+  --violet-2:  #a98bff;
+  --pink:      #ff5c8a;
+  --cyan:      #34e3ff;
+  --gold:      #ffd36e;
+
+  /* ---- shape ---- */
+  --radius:    16px;
+  --radius-lg: 22px;
+  --shadow:    0 10px 30px rgba(0,0,0,.45);
+  --shadow-sm: 0 4px 14px rgba(0,0,0,.35);
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html,body{ margin:0; padding:0; }
+
+body{
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(124,92,255,.18), transparent 60%),
+    radial-gradient(700px 500px at 100% 10%, rgba(255,92,138,.10), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Plus Jakarta Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height:1.5;
+  min-height:100dvh;
+  /* respect notches */
+  padding:
+    max(14px, env(safe-area-inset-top))
+    14px
+    calc(86px + env(safe-area-inset-bottom)); /* leave room for bottom nav */
+}
+
+/* single centered column, phone-width */
+.shell{
+  width:100%;
+  max-width:440px;
+  margin:0 auto;
+}
+
+/* ---------- load-in animation ---------- */
+@keyframes rise{
+  from{ opacity:0; transform:translateY(16px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+.fade{ opacity:0; animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards; }
+@media (prefers-reduced-motion:reduce){ .fade{ animation:none; opacity:1; } }
+
+/* =================  1 · HEADER BAR  ================= */
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  height:44px; margin-bottom:10px;
+}
+.icon-btn{
+  width:40px; height:40px; display:grid; place-items:center;
+  border:1px solid var(--line); border-radius:12px;
+  background:rgba(255,255,255,.03); color:var(--muted);
+  cursor:pointer; transition:.18s;
+}
+.icon-btn:active{ transform:scale(.92); }
+.icon-btn:hover{ background:var(--card-2); color:var(--text); border-color:var(--line-2); }
+.brand{
+  display:flex; align-items:center; gap:8px;
+  font-weight:800; letter-spacing:-.02em; font-size:18px;
+}
+.brand .dot{ color:var(--violet-2); }
+
+/* =================  2 · HERO / PROFILE  ================= */
+.hero{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.banner{
+  position:relative;
+  height:150px;
+  background:linear-gradient(135deg,#241a4d 0%, #3a1f54 45%, #12131f 100%);
+  overflow:hidden;
+}
+.banner svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+.banner::after{ /* fade banner into card */
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(to bottom, transparent 55%, var(--card) 100%);
+}
+.hero-body{ padding:0 18px 20px; }
+
+.avatar{
+  width:104px; height:104px; margin-top:-56px; position:relative; z-index:2;
+  border-radius:50%;
+  border:4px solid var(--card);
+  background:linear-gradient(160deg,#2a2150,#181a2b);
+  box-shadow:var(--shadow-sm);
+  overflow:hidden;
+}
+.avatar svg{ width:100%; height:100%; display:block; }
+.online{
+  position:absolute; right:6px; bottom:8px; z-index:3;
+  width:18px; height:18px; border-radius:50%;
+  background:#2ce28a; border:3px solid var(--card);
+}
+
+.name-row{ display:flex; align-items:center; gap:8px; margin-top:12px; }
+.name{ font-size:24px; font-weight:800; letter-spacing:-.02em; }
+.verified{ color:var(--cyan); display:inline-grid; place-items:center; }
+
+.bio{ display:flex; align-items:center; gap:10px; margin-top:4px; color:var(--muted); font-size:14.5px; }
+.bio .accent{ width:3px; height:16px; border-radius:3px; background:linear-gradient(var(--violet),var(--pink)); }
+.bio b{ color:var(--text); font-weight:600; }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip{
+  font-size:12.5px; font-weight:600; color:var(--violet-2);
+  padding:6px 12px; border-radius:999px;
+  background:rgba(124,92,255,.12);
+  border:1px solid rgba(124,92,255,.28);
+}
+.chip.alt{ color:var(--pink); background:rgba(255,92,138,.10); border-color:rgba(255,92,138,.28); }
+
+/* =================  3 · ACTION ROW  ================= */
+.actions{ display:flex; gap:10px; margin-top:16px; }
+.btn{
+  flex:1; height:52px; display:flex; align-items:center; justify-content:center; gap:9px;
+  border:none; border-radius:14px; cursor:pointer;
+  font-family:inherit; font-size:15.5px; font-weight:700; color:#fff;
+  background:linear-gradient(135deg,var(--violet),#5b3ce0);
+  box-shadow:0 8px 22px rgba(124,92,255,.40);
+  transition:.18s;
+}
+.btn:active{ transform:scale(.97); }
+.btn:hover{ filter:brightness(1.07); }
+.btn-icon{
+  width:52px; height:52px; flex:0 0 52px; border-radius:14px;
+  display:grid; place-items:center; cursor:pointer;
+  background:var(--card); border:1px solid var(--line); color:var(--muted);
+  transition:.18s;
+}
+.btn-icon:active{ transform:scale(.93); }
+.btn-icon.active{ color:var(--pink); border-color:rgba(255,92,138,.45); background:rgba(255,92,138,.10); }
+
+/* =================  4 · SECTION TITLES  ================= */
+.sec-title{
+  margin:26px 4px 12px;
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--faint);
+}
+
+/* =================  4 · LINK BLOCKS  ================= */
+.links{ display:flex; flex-direction:column; gap:11px; }
+.link-card{
+  display:flex; align-items:center; gap:14px;
+  padding:12px 14px;
+  background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); text-decoration:none; color:inherit;
+  box-shadow:var(--shadow-sm);
+  transition:.18s;
+}
+.link-card:hover{ background:var(--card-2); border-color:var(--line-2); transform:translateY(-2px); }
+.link-card:active{ transform:scale(.985); }
+.thumb{
+  width:50px; height:50px; flex:0 0 50px; border-radius:13px; overflow:hidden;
+  background:#10131b; border:1px solid var(--line);
+}
+.thumb svg{ width:100%; height:100%; display:block; }
+.link-meta{ min-width:0; flex:1; }
+.link-title{ font-size:15.5px; font-weight:700; letter-spacing:-.01em; }
+.link-sub{ font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chev{ color:var(--faint); flex:0 0 auto; }
+
+/* =================  5 · ABOUT  ================= */
+.about{
+  display:flex; gap:14px; align-items:center;
+  background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); padding:16px; box-shadow:var(--shadow-sm);
+}
+.about-art{ width:96px; height:96px; flex:0 0 96px; border-radius:14px; overflow:hidden; background:#10131b; border:1px solid var(--line); }
+.about-art svg{ width:100%; height:100%; display:block; }
+.about p{ margin:0; font-size:13.5px; color:var(--muted); }
+.about p b{ color:var(--text); font-weight:600; }
+
+/* =================  6 · FOOTER  ================= */
+.powered{
+  text-align:center; color:var(--faint); font-size:12px;
+  margin:24px 0 8px; letter-spacing:.02em;
+}
+.powered b{ color:var(--violet-2); font-weight:700; }
+
+/* fixed bottom nav (dot.cards style) */
+.bottom-nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:20;
+  display:flex; justify-content:center;
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top, var(--bg) 60%, transparent);
+  pointer-events:none;
+}
+.nav-inner{
+  pointer-events:auto;
+  display:flex; gap:4px; width:100%; max-width:440px;
+  background:rgba(22,27,36,.85); backdrop-filter:blur(14px);
+  border:1px solid var(--line); border-radius:18px; padding:7px;
+  box-shadow:var(--shadow);
+}
+.nav-item{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:7px 0; border-radius:12px; cursor:pointer;
+  color:var(--faint); font-size:10.5px; font-weight:600; letter-spacing:.02em;
+  background:none; border:none; font-family:inherit; transition:.16s;
+}
+.nav-item.active{ color:var(--text); background:rgba(124,92,255,.14); }
+.nav-item:active{ transform:scale(.94); }
+.nav-item svg{ width:21px; height:21px; }
+
+/* toast */
+.toast{
+  position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+  background:#fff; color:#11151c; font-weight:700; font-size:13.5px;
+  padding:11px 18px; border-radius:999px; box-shadow:var(--shadow);
+  opacity:0; pointer-events:none; transition:.28s; z-index:50; white-space:nowrap;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+
+<body>
+
+<!-- ===== shared SVG palette — every manga illustration references these,
+         so the whole card keeps one consistent character + colour scheme ===== -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#3a2a73"/><stop offset="60%" stop-color="#241b45"/><stop offset="100%" stop-color="#14111f"/>
+    </radialGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe6cf"/><stop offset="100%" stop-color="#ffd0ad"/>
+    </linearGradient>
+    <linearGradient id="hairBase" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a67ff"/><stop offset="55%" stop-color="#6a45e6"/><stop offset="100%" stop-color="#3f2aa6"/>
+    </linearGradient>
+    <linearGradient id="hairDark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a2fae"/><stop offset="100%" stop-color="#2c1c73"/>
+    </linearGradient>
+    <linearGradient id="iris" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a1f8f"/><stop offset="45%" stop-color="#7c5cff"/><stop offset="100%" stop-color="#cdb8ff"/>
+    </linearGradient>
+    <clipPath id="eyeL"><path d="M84,119 C90,106 109,106 115,119 C110,131 89,131 84,119 Z"/></clipPath>
+    <clipPath id="eyeR"><path d="M125,119 C131,106 150,106 156,119 C151,131 130,131 125,119 Z"/></clipPath>
+  </defs>
+</svg>
+
+<div class="shell">
+
+  <!-- =====================================================  1 · HEADER  -->
+  <header class="topbar fade" style="animation-delay:.02s">
+    <button class="icon-btn" aria-label="Settings" onclick="toast('Settings')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+
+    <!-- ART: brand mark (interlocking N inside the NFC ring) -->
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 5C14.6 5 7 12.6 7 22c0 6.7 3.9 12.5 9.6 15.3" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M24 43c9.4 0 17-7.6 17-17 0-6.7-3.9-12.5-9.6-15.3" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M17 30V16l14 16V18" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>nfc<span class="dot">.</span></span>
+    </div>
+
+    <button class="icon-btn" aria-label="Share" onclick="shareCard()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+    </button>
+  </header>
+
+  <!-- =====================================================  2 · HERO  -->
+  <section class="hero fade" style="animation-delay:.08s">
+
+    <!-- ART: hero banner — manga neon skyline with a character silhouette -->
+    <div class="banner">
+      <svg viewBox="0 0 440 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a1f6e"/><stop offset="1" stop-color="#141329"/>
+          </linearGradient>
+          <radialGradient id="moon" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#ffe6f0"/><stop offset="1" stop-color="#ff9fc4"/>
+          </radialGradient>
+        </defs>
+        <rect width="440" height="150" fill="url(#sky)"/>
+        <!-- big moon -->
+        <circle cx="338" cy="52" r="34" fill="url(#moon)" opacity=".95"/>
+        <circle cx="352" cy="44" r="34" fill="#3a1f6e" opacity=".55"/>
+        <!-- stars -->
+        <g fill="#fff" opacity=".8">
+          <circle cx="60" cy="30" r="1.4"/><circle cx="120" cy="20" r="1"/><circle cx="200" cy="38" r="1.2"/>
+          <circle cx="270" cy="24" r="1"/><circle cx="400" cy="30" r="1.3"/><circle cx="160" cy="55" r="1"/>
+          <circle cx="30" cy="60" r="1"/><circle cx="410" cy="80" r="1.1"/>
+        </g>
+        <!-- city skyline -->
+        <g fill="#1c1840">
+          <rect x="0"   y="92"  width="46" height="58"/>
+          <rect x="40"  y="74"  width="34" height="76"/>
+          <rect x="70"  y="100" width="40" height="50"/>
+          <rect x="150" y="84"  width="30" height="66"/>
+          <rect x="240" y="96"  width="44" height="54"/>
+          <rect x="300" y="78"  width="30" height="72"/>
+          <rect x="372" y="92"  width="40" height="58"/>
+          <rect x="402" y="104" width="38" height="46"/>
+        </g>
+        <!-- lit windows -->
+        <g fill="#ffd36e" opacity=".85">
+          <rect x="50" y="84" width="4" height="5"/><rect x="60" y="84" width="4" height="5"/>
+          <rect x="50" y="96" width="4" height="5"/><rect x="60" y="96" width="4" height="5"/>
+          <rect x="308" y="88" width="4" height="5"/><rect x="318" y="88" width="4" height="5"/>
+          <rect x="308" y="100" width="4" height="5"/><rect x="318" y="100" width="4" height="5"/>
+          <rect x="157" y="94" width="4" height="5"/><rect x="167" y="94" width="4" height="5"/>
+        </g>
+        <!-- foreground character silhouette (back view, looking at city) -->
+        <g transform="translate(196,58)">
+          <!-- hair -->
+          <path d="M0 18 C-6 2 26 2 22 20 C28 30 26 48 22 60 L-2 60 C-6 46 -6 30 0 18 Z" fill="#5b40c9"/>
+          <!-- shoulders/jacket -->
+          <path d="M-14 64 C-12 50 34 50 36 64 L40 92 L-18 92 Z" fill="#241c52"/>
+          <!-- collar accent -->
+          <path d="M6 60 l8 10 8 -10" fill="none" stroke="#ff5c8a" stroke-width="3" stroke-linecap="round"/>
+          <!-- hair highlight -->
+          <path d="M2 20 C2 34 2 48 4 58" fill="none" stroke="#a98bff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="hero-body">
+
+      <!-- ART: avatar — anime portrait (purple hair, violet eyes) -->
+      <div class="avatar">
+        <span class="online" title="Available"></span>
+        <svg viewBox="0 0 240 240" aria-label="Portrait of Yuki Tanaka, manga style">
+          <rect width="240" height="240" fill="url(#bg)"/>
+          <!-- bokeh + sparkles -->
+          <g fill="#fff" opacity=".5"><circle cx="40" cy="44" r="2.4"/><circle cx="206" cy="60" r="1.8"/><circle cx="196" cy="150" r="1.6"/><circle cx="36" cy="150" r="1.6"/></g>
+          <g fill="#b49bff" opacity=".35"><circle cx="58" cy="80" r="9"/><circle cx="190" cy="100" r="12"/><circle cx="48" cy="120" r="6"/></g>
+          <path d="M204 36 l2.2 5 5 2.2 -5 2.2 -2.2 5 -2.2-5 -5-2.2 5-2.2z" fill="#fff" opacity=".85"/>
+          <path d="M44 184 l1.6 3.6 3.6 1.6 -3.6 1.6 -1.6 3.6 -1.6-3.6 -3.6-1.6 3.6-1.6z" fill="#ffd36e" opacity=".85"/>
+          <!-- back hair -->
+          <path d="M58 132 C40 86 64 36 120 36 C176 36 200 86 182 132 C192 168 178 210 180 240 L60 240 C62 210 48 168 58 132 Z" fill="url(#hairDark)"/>
+          <!-- shoulders / jacket -->
+          <path d="M60 240 C62 196 92 182 120 182 C148 182 178 196 180 240 Z" fill="#221a4d"/>
+          <path d="M120 188 l-10 16 10 14 10-14z" fill="#15112e"/>
+          <path d="M104 196 l16 0" stroke="#ff5c8a" stroke-width="3" stroke-linecap="round"/>
+          <!-- neck -->
+          <path d="M104 168 h32 v14 c0 9 -32 9 -32 0 Z" fill="#f3c6a0"/>
+          <path d="M104 176 c8 8 24 8 32 0" fill="none" stroke="#e2a87f" stroke-width="2" opacity=".6"/>
+          <!-- face -->
+          <path d="M76 110 C72 84 92 64 120 64 C148 64 168 84 164 110 C162 140 144 166 120 170 C96 166 78 140 76 110 Z" fill="url(#skin)"/>
+          <path d="M80 96 C92 78 148 78 160 96 C150 86 90 86 80 96 Z" fill="#e9b48b" opacity=".5"/>
+          <!-- ears + earrings -->
+          <path d="M74 116 c-7 -2 -9 8 -3 12 4 3 7 0 8 -4z" fill="url(#skin)"/>
+          <path d="M166 116 c7 -2 9 8 3 12 -4 3 -7 0 -8 -4z" fill="url(#skin)"/>
+          <circle cx="73" cy="130" r="2.2" fill="#34e3ff"/><circle cx="167" cy="130" r="2.2" fill="#34e3ff"/>
+          <!-- blush -->
+          <ellipse cx="94" cy="138" rx="9" ry="4.6" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="146" cy="138" rx="9" ry="4.6" fill="#ff9bb8" opacity=".55"/>
+          <!-- nose + mouth -->
+          <path d="M120 128 l-3 8 h6 z" fill="#eaae87" opacity=".75"/>
+          <path d="M110 150 q10 8 20 0" fill="none" stroke="#c9706c" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M114 150 q6 4 12 0" fill="#ff6f8b" opacity=".5"/>
+          <!-- eyes (clipped almond shapes with iris + catchlights) -->
+          <g clip-path="url(#eyeL)">
+            <rect x="80" y="104" width="40" height="30" fill="#fff"/>
+            <ellipse cx="99" cy="122" rx="12" ry="14" fill="url(#iris)"/>
+            <ellipse cx="99" cy="124" rx="6.5" ry="8.5" fill="#1c1140"/>
+            <circle cx="94" cy="115" r="4.6" fill="#fff"/>
+            <circle cx="104" cy="127" r="2.4" fill="#fff" opacity=".8"/>
+            <path d="M84 110 h32" stroke="#3a2470" stroke-width="6" opacity=".25"/>
+          </g>
+          <g clip-path="url(#eyeR)">
+            <rect x="121" y="104" width="40" height="30" fill="#fff"/>
+            <ellipse cx="141" cy="122" rx="12" ry="14" fill="url(#iris)"/>
+            <ellipse cx="141" cy="124" rx="6.5" ry="8.5" fill="#1c1140"/>
+            <circle cx="136" cy="115" r="4.6" fill="#fff"/>
+            <circle cx="146" cy="127" r="2.4" fill="#fff" opacity=".8"/>
+            <path d="M125 110 h32" stroke="#3a2470" stroke-width="6" opacity=".25"/>
+          </g>
+          <!-- winged upper lash lines -->
+          <path d="M82 120 C88 105 110 105 116 118" fill="none" stroke="#241338" stroke-width="4.2" stroke-linecap="round"/>
+          <path d="M124 118 C130 105 152 105 158 120" fill="none" stroke="#241338" stroke-width="4.2" stroke-linecap="round"/>
+          <path d="M82 120 l-4 5" stroke="#241338" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M158 120 l4 5" stroke="#241338" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M88 130 q10 4 24 0" stroke="#caa089" stroke-width="1.6" fill="none" opacity=".7"/>
+          <path d="M128 130 q10 4 24 0" stroke="#caa089" stroke-width="1.6" fill="none" opacity=".7"/>
+          <!-- eyebrows -->
+          <path d="M86 100 q12 -6 26 -1" stroke="#5a3fc4" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M128 99 q14 -5 26 1" stroke="#5a3fc4" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- full bangs + strand texture -->
+          <path d="M74 104 C66 70 90 50 120 50 C150 50 174 70 166 104 C165 98 160 94 154 99 C151 92 146 92 142 99 C137 92 131 93 128 100 C124 93 117 92 112 99 C108 92 102 93 98 99 C94 93 89 93 86 99 C81 94 77 98 74 104 Z" fill="url(#hairBase)"/>
+          <g stroke="#2c1c73" stroke-width="1.6" opacity=".5" fill="none" stroke-linecap="round">
+            <path d="M120 54 C120 70 120 84 120 96"/>
+            <path d="M100 60 C97 74 96 86 98 98"/>
+            <path d="M140 60 C143 74 144 86 142 98"/>
+          </g>
+          <!-- side framing strands + gloss + neon rim light -->
+          <path d="M76 104 C70 130 74 156 84 172 C78 150 78 126 84 108 Z" fill="url(#hairBase)"/>
+          <path d="M164 104 C170 130 166 156 156 172 C162 150 162 126 156 108 Z" fill="url(#hairBase)"/>
+          <path d="M88 78 C90 92 92 108 96 124" fill="none" stroke="#c9b6ff" stroke-width="2.6" stroke-linecap="round" opacity=".5"/>
+          <path d="M150 80 C150 94 148 110 144 124" fill="none" stroke="#b49bff" stroke-width="2.2" stroke-linecap="round" opacity=".45"/>
+          <path d="M60 130 C46 92 66 44 116 38" fill="none" stroke="#ff6fa5" stroke-width="2.6" stroke-linecap="round" opacity=".7"/>
+          <path d="M180 130 C194 92 176 46 128 38" fill="none" stroke="#4fe6ff" stroke-width="2.6" stroke-linecap="round" opacity=".6"/>
+        </svg>
+      </div>
+
+      <div class="name-row">
+        <span class="name">Yuki Tanaka</span>
+        <span class="verified" title="Verified">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3 .1 1 2.8 2.4 1.7-.9 2.9.9 2.9-2.4 1.7-1 2.8-3 .1L12 22l-2.4-1.8-3-.1-1-2.8L3.2 14.9l.9-2.9-.9-2.9 2.4-1.7 1-2.8 3-.1L12 2z"/><path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" stroke="#11151c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+      <div class="bio">
+        <span class="accent"></span>
+        <span>Manga Artist &amp; Creative Director <b>| NFC</b></span>
+      </div>
+
+      <div class="chips">
+        <span class="chip">Business</span>
+        <span class="chip alt">NFC Card</span>
+        <span class="chip">Anime Studio</span>
+      </div>
+
+      <!-- =================  3 · ACTION ROW  ================= -->
+      <div class="actions">
+        <button class="btn" onclick="saveContact()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+          Save Contact
+        </button>
+        <button class="btn-icon" id="likeBtn" aria-label="Like" onclick="toggleLike(this)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =====================================================  4 · LINKS  -->
+  <h2 class="sec-title fade" style="animation-delay:.14s">Connect</h2>
+  <div class="links">
+
+    <!-- INSTAGRAM -->
+    <a class="link-card fade" style="animation-delay:.16s" href="https://instagram.com/" target="_blank" rel="noopener">
+      <span class="thumb"><!-- ART: manga character + floating Instagram glyph -->
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#191427"/>
+          <circle cx="50" cy="44" r="30" fill="#fa7e1e" opacity=".22"/>
+          <path d="M24 60 C16 34 30 16 50 16 C70 16 84 34 76 60 C82 78 78 96 78 100 L22 100 C22 96 18 78 24 60 Z" fill="#3a2790"/>
+          <path d="M30 100 C30 84 40 78 50 78 C60 78 70 84 70 100 Z" fill="#221a4d"/>
+          <path d="M43 70 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+          <path d="M33 46 C31 32 40 24 50 24 C60 24 69 32 67 46 C66 60 58 68 50 68 C42 68 34 60 33 46 Z" fill="url(#skin)"/>
+          <ellipse cx="40" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="42" cy="48" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="48" rx="4" ry="5" fill="url(#iris)"/>
+          <ellipse cx="42" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/>
+          <circle cx="40.5" cy="46" r="1.5" fill="#fff"/><circle cx="56.5" cy="46" r="1.5" fill="#fff"/>
+          <path d="M37 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M55 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 60 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M31 46 C27 26 40 18 50 18 C60 18 73 26 69 46 C66 36 58 32 54 38 C52 28 48 28 46 38 C42 32 34 36 31 46 Z" fill="url(#hairBase)"/>
+          <path d="M33 46 C29 60 31 74 38 84" fill="none" stroke="#b49bff" stroke-width="1.6" opacity=".5"/>
+          <g transform="translate(72,20)"><rect x="-8" y="-8" width="16" height="16" rx="5" fill="none" stroke="#fa7e1e" stroke-width="2.4"/><circle r="4" fill="none" stroke="#fa7e1e" stroke-width="2.4"/><circle cx="5" cy="-5" r="1.3" fill="#feda75"/></g>
+        </svg>
+      </span>
+      <span class="link-meta"><div class="link-title">Instagram</div><div class="link-sub">@yuki.draws · 128k followers</div></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+
+    <!-- TELEGRAM -->
+    <a class="link-card fade" style="animation-delay:.20s" href="https://t.me/" target="_blank" rel="noopener">
+      <span class="thumb"><!-- ART: manga character + Telegram paper plane -->
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#13202b"/>
+          <circle cx="50" cy="44" r="30" fill="#34a8e3" opacity=".20"/>
+          <path d="M24 60 C16 34 30 16 50 16 C70 16 84 34 76 60 C82 78 78 96 78 100 L22 100 C22 96 18 78 24 60 Z" fill="#3a2790"/>
+          <path d="M30 100 C30 84 40 78 50 78 C60 78 70 84 70 100 Z" fill="#221a4d"/>
+          <path d="M43 70 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+          <path d="M33 46 C31 32 40 24 50 24 C60 24 69 32 67 46 C66 60 58 68 50 68 C42 68 34 60 33 46 Z" fill="url(#skin)"/>
+          <ellipse cx="40" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="42" cy="48" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="48" rx="4" ry="5" fill="url(#iris)"/>
+          <ellipse cx="42" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/>
+          <circle cx="40.5" cy="46" r="1.5" fill="#fff"/><circle cx="56.5" cy="46" r="1.5" fill="#fff"/>
+          <path d="M37 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M55 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 60 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M31 46 C27 26 40 18 50 18 C60 18 73 26 69 46 C66 36 58 32 54 38 C52 28 48 28 46 38 C42 32 34 36 31 46 Z" fill="url(#hairBase)"/>
+          <path d="M33 46 C29 60 31 74 38 84" fill="none" stroke="#b49bff" stroke-width="1.6" opacity=".5"/>
+          <g transform="translate(72,22)"><path d="M-9 2 L9 -7 L4 10 L-1 4 Z" fill="#34a8e3"/><path d="M9 -7 L-1 4 L-9 2 Z" fill="#8ad4f5"/></g>
+        </svg>
+      </span>
+      <span class="link-meta"><div class="link-title">Telegram</div><div class="link-sub">Message me directly</div></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+
+    <!-- PHONE / CALL -->
+    <a class="link-card fade" style="animation-delay:.24s" href="tel:+10000000000">
+      <span class="thumb"><!-- ART: manga character holding a phone -->
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#15231b"/>
+          <circle cx="50" cy="44" r="30" fill="#2ce28a" opacity=".18"/>
+          <path d="M24 60 C16 34 30 16 50 16 C70 16 84 34 76 60 C82 78 78 96 78 100 L22 100 C22 96 18 78 24 60 Z" fill="#3a2790"/>
+          <path d="M30 100 C30 84 40 78 50 78 C60 78 70 84 70 100 Z" fill="#221a4d"/>
+          <path d="M43 70 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+          <path d="M33 46 C31 32 40 24 50 24 C60 24 69 32 67 46 C66 60 58 68 50 68 C42 68 34 60 33 46 Z" fill="url(#skin)"/>
+          <ellipse cx="40" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="42" cy="48" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="48" rx="4" ry="5" fill="url(#iris)"/>
+          <ellipse cx="42" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/>
+          <circle cx="40.5" cy="46" r="1.5" fill="#fff"/><circle cx="56.5" cy="46" r="1.5" fill="#fff"/>
+          <path d="M37 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M55 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 60 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M31 46 C27 26 40 18 50 18 C60 18 73 26 69 46 C66 36 58 32 54 38 C52 28 48 28 46 38 C42 32 34 36 31 46 Z" fill="url(#hairBase)"/>
+          <path d="M33 46 C29 60 31 74 38 84" fill="none" stroke="#b49bff" stroke-width="1.6" opacity=".5"/>
+          <g transform="translate(74,60) rotate(16)"><rect x="-7" y="-12" width="14" height="24" rx="3.4" fill="#1d2730" stroke="#2ce28a" stroke-width="2"/><circle cy="8" r="1.4" fill="#2ce28a"/></g>
+        </svg>
+      </span>
+      <span class="link-meta"><div class="link-title">Call</div><div class="link-sub">+1 (000) 000-0000</div></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+
+    <!-- WEBSITE -->
+    <a class="link-card fade" style="animation-delay:.28s" href="https://example.com/" target="_blank" rel="noopener">
+      <span class="thumb"><!-- ART: manga character + glowing globe -->
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#1a1726"/>
+          <circle cx="50" cy="44" r="30" fill="#7c5cff" opacity=".24"/>
+          <path d="M24 60 C16 34 30 16 50 16 C70 16 84 34 76 60 C82 78 78 96 78 100 L22 100 C22 96 18 78 24 60 Z" fill="#3a2790"/>
+          <path d="M30 100 C30 84 40 78 50 78 C60 78 70 84 70 100 Z" fill="#221a4d"/>
+          <path d="M43 70 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+          <path d="M33 46 C31 32 40 24 50 24 C60 24 69 32 67 46 C66 60 58 68 50 68 C42 68 34 60 33 46 Z" fill="url(#skin)"/>
+          <ellipse cx="40" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="42" cy="48" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="48" rx="4" ry="5" fill="url(#iris)"/>
+          <ellipse cx="42" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/>
+          <circle cx="40.5" cy="46" r="1.5" fill="#fff"/><circle cx="56.5" cy="46" r="1.5" fill="#fff"/>
+          <path d="M37 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M55 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 60 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M31 46 C27 26 40 18 50 18 C60 18 73 26 69 46 C66 36 58 32 54 38 C52 28 48 28 46 38 C42 32 34 36 31 46 Z" fill="url(#hairBase)"/>
+          <path d="M33 46 C29 60 31 74 38 84" fill="none" stroke="#b49bff" stroke-width="1.6" opacity=".5"/>
+          <g transform="translate(73,22)"><circle r="8" fill="#10131b" stroke="#a98bff" stroke-width="2"/><path d="M-8 0h16M0 -8v16M-5 -4q5 4 10 0M-5 4q5 -4 10 0" stroke="#a98bff" stroke-width="1.3" fill="none"/></g>
+        </svg>
+      </span>
+      <span class="link-meta"><div class="link-title">Website</div><div class="link-sub">yukitanaka.studio</div></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+
+    <!-- LOCATION / MAP -->
+    <a class="link-card fade" style="animation-delay:.32s" href="https://maps.google.com/" target="_blank" rel="noopener">
+      <span class="thumb"><!-- ART: manga character + location pin -->
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <rect width="100" height="100" fill="#261620"/>
+          <circle cx="50" cy="44" r="30" fill="#ff5c8a" opacity=".20"/>
+          <path d="M24 60 C16 34 30 16 50 16 C70 16 84 34 76 60 C82 78 78 96 78 100 L22 100 C22 96 18 78 24 60 Z" fill="#3a2790"/>
+          <path d="M30 100 C30 84 40 78 50 78 C60 78 70 84 70 100 Z" fill="#221a4d"/>
+          <path d="M43 70 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+          <path d="M33 46 C31 32 40 24 50 24 C60 24 69 32 67 46 C66 60 58 68 50 68 C42 68 34 60 33 46 Z" fill="url(#skin)"/>
+          <ellipse cx="40" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="54" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+          <ellipse cx="42" cy="48" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="48" rx="4" ry="5" fill="url(#iris)"/>
+          <ellipse cx="42" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="49.5" rx="2" ry="2.8" fill="#1c1140"/>
+          <circle cx="40.5" cy="46" r="1.5" fill="#fff"/><circle cx="56.5" cy="46" r="1.5" fill="#fff"/>
+          <path d="M37 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M55 42 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M45 60 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M31 46 C27 26 40 18 50 18 C60 18 73 26 69 46 C66 36 58 32 54 38 C52 28 48 28 46 38 C42 32 34 36 31 46 Z" fill="url(#hairBase)"/>
+          <path d="M33 46 C29 60 31 74 38 84" fill="none" stroke="#b49bff" stroke-width="1.6" opacity=".5"/>
+          <g transform="translate(73,20)"><path d="M0 -9c-4.5 0-8 3.6-8 8C-8 5 0 14 0 14s8-9 8-15C8 -5.4 4.5 -9 0 -9Z" fill="#ff5c8a"/><circle cy="-1" r="3" fill="#fff"/></g>
+        </svg>
+      </span>
+      <span class="link-meta"><div class="link-title">Location</div><div class="link-sub">Shibuya, Tokyo · Open in Maps</div></span>
+      <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+    </a>
+
+  </div>
+
+  <!-- =====================================================  5 · ABOUT  -->
+  <h2 class="sec-title fade" style="animation-delay:.36s">About</h2>
+  <section class="about fade" style="animation-delay:.38s">
+    <div class="about-art"><!-- ART: manga artist at her drawing desk (same character) -->
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect width="100" height="100" fill="#191427"/>
+        <circle cx="50" cy="40" r="32" fill="#7c5cff" opacity=".18"/>
+        <g fill="#fff" opacity=".5"><circle cx="20" cy="22" r="1.6"/><circle cx="82" cy="26" r="1.4"/></g>
+        <!-- character (same girl) -->
+        <path d="M24 58 C16 32 30 14 50 14 C70 14 84 32 76 58 C82 76 78 96 78 100 L22 100 C22 96 18 76 24 58 Z" fill="#3a2790"/>
+        <path d="M43 66 h14 v8 c0 5 -14 5 -14 0 Z" fill="#f3c6a0"/>
+        <path d="M33 44 C31 30 40 22 50 22 C60 22 69 30 67 44 C66 58 58 66 50 66 C42 66 34 58 33 44 Z" fill="url(#skin)"/>
+        <ellipse cx="40" cy="52" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/><ellipse cx="60" cy="52" rx="4" ry="2.2" fill="#ff9bb8" opacity=".55"/>
+        <ellipse cx="42" cy="46" rx="4" ry="5" fill="url(#iris)"/><ellipse cx="58" cy="46" rx="4" ry="5" fill="url(#iris)"/>
+        <ellipse cx="42" cy="47.5" rx="2" ry="2.8" fill="#1c1140"/><ellipse cx="58" cy="47.5" rx="2" ry="2.8" fill="#1c1140"/>
+        <circle cx="40.5" cy="44" r="1.5" fill="#fff"/><circle cx="56.5" cy="44" r="1.5" fill="#fff"/>
+        <path d="M37 40 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M55 40 q4 -2.5 8 0" stroke="#241338" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M45 58 q5 3 10 0" stroke="#c9706c" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M31 44 C27 24 40 16 50 16 C60 16 73 24 69 44 C66 34 58 30 54 36 C52 26 48 26 46 36 C42 30 34 34 31 44 Z" fill="url(#hairBase)"/>
+        <!-- desk + drawing tablet + pencil (foreground) -->
+        <rect x="0" y="84" width="100" height="16" fill="#241c52"/>
+        <rect x="13" y="75" width="36" height="12" rx="2" fill="#10131b" stroke="#a98bff" stroke-width="1.5" transform="rotate(-7 31 81)"/>
+        <g transform="rotate(30 72 80)"><rect x="56" y="77" width="24" height="3.6" rx="1.6" fill="#ffd36e"/><path d="M80 77 l5 1.8 -5 1.8z" fill="#ff5c8a"/></g>
+      </svg>
+    </div>
+    <p>Hey, I'm <b>Yuki</b> — I draw manga and direct anime-style brand worlds. Tap to save my card, follow the studio, or reach out for <b>collabs &amp; commissions</b>.</p>
+  </section>
+
+  <!-- =====================================================  6 · FOOTER  -->
+  <p class="powered fade" style="animation-delay:.42s">Powered by <b>nfc.</b> — tap. connect. create.</p>
+
+</div><!-- /.shell -->
+
+<!-- fixed bottom nav -->
+<nav class="bottom-nav">
+  <div class="nav-inner">
+    <button class="nav-item active" onclick="navSelect(this,'Insights')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+      Insights
+    </button>
+    <button class="nav-item" onclick="navSelect(this,'Style')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.5" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg>
+      Style
+    </button>
+    <button class="nav-item" onclick="navSelect(this,'Contacts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/></svg>
+      Contacts
+    </button>
+    <button class="nav-item" onclick="navSelect(this,'Profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      Profile
+    </button>
+  </div>
+</nav>
+
+<div class="toast" id="toast">Done</div>
+
+<script>
+/* =========================================================================
+   INTERACTIONS  (vanilla JS, no dependencies)
+   ========================================================================= */
+
+/* ---- CONTACT DETAILS — edit these to change the saved vCard ---- */
+const CONTACT = {
+  first:  "Yuki",
+  last:   "Tanaka",
+  title:  "Manga Artist & Creative Director",
+  org:    "NFC Studio",
+  phone:  "+10000000000",
+  email:  "hello@yukitanaka.studio",
+  url:    "https://yukitanaka.studio",
+  city:   "Shibuya, Tokyo"
+};
+
+/* lightweight toast */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+/* Save Contact -> generate + download a .vcf the phone can import */
+function saveContact(){
+  const c = CONTACT;
+  const vcard = [
+    "BEGIN:VCARD","VERSION:3.0",
+    `N:${c.last};${c.first};;;`,
+    `FN:${c.first} ${c.last}`,
+    `TITLE:${c.title}`,
+    `ORG:${c.org}`,
+    `TEL;TYPE=CELL:${c.phone}`,
+    `EMAIL:${c.email}`,
+    `URL:${c.url}`,
+    `ADR;TYPE=WORK:;;${c.city};;;;`,
+    "END:VCARD"
+  ].join("\n");
+
+  const blob = new Blob([vcard], {type:"text/vcard"});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = `${c.first}_${c.last}.vcf`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast("Contact saved ✓");
+}
+
+/* Like button toggle */
+function toggleLike(btn){
+  btn.classList.toggle('active');
+  toast(btn.classList.contains('active') ? "Liked ♥" : "Removed");
+}
+
+/* Native share sheet (falls back to copy) */
+async function shareCard(){
+  const data = { title:"Yuki Tanaka · NFC Card", text:"Tap to connect with Yuki", url:location.href };
+  try{
+    if(navigator.share){ await navigator.share(data); }
+    else { await navigator.clipboard.writeText(location.href); toast("Link copied ✓"); }
+  }catch(e){ /* user dismissed */ }
+}
+
+/* Bottom nav active state */
+function navSelect(el, label){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  toast(label);
+}
+</script>
+</body>
+</html>
