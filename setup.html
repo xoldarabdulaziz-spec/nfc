@@ -244,6 +244,48 @@ img,svg{ display:block; }
 .crop-save{ flex:1; height:52px; border-radius:13px; background:#3d4350; border:none; color:#fff; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
 .crop-change:active,.crop-save:active{ transform:translateY(1px); }
 
+/* ===== full-screen Add Content panel + form ===== */
+.fs{ position:fixed; inset:0; z-index:92; background:var(--bg); display:none; justify-content:center; }
+.fs.show{ display:flex; }
+.fs.form{ z-index:94; }
+.fs-col{ width:100%; max-width:500px; height:100dvh; display:flex; flex-direction:column; }
+.fs-head{ flex:0 0 auto; position:relative; height:58px; display:flex; align-items:center; justify-content:center; background:var(--head); border-bottom:1px solid var(--line); }
+.fs-head .back{ position:absolute; left:16px; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:#2a3140; border:1px solid var(--line-2); color:var(--text); cursor:pointer; }
+.fs-head .back:active{ transform:scale(.93); }
+.fs-head h2{ margin:0; font-size:18px; font-weight:800; }
+.fs-search{ flex:0 0 auto; padding:14px 18px 4px; }
+.fs-search .box{ display:flex; align-items:center; gap:9px; background:#222a36; border:1px solid var(--line); border-radius:12px; padding:11px 13px; }
+.fs-search .box svg{ color:var(--muted); flex:0 0 auto; }
+.fs-search input{ flex:1; min-width:0; border:none; background:none; outline:none; color:var(--text); font-family:inherit; font-size:14.5px; }
+.fs-body{ flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 18px 36px; }
+.cat-label{ font-size:12px; font-weight:800; letter-spacing:.12em; color:var(--label); text-transform:uppercase; margin:18px 4px 11px; }
+.opt{ display:flex; align-items:center; gap:13px; padding:11px 14px; background:var(--card); border:1px solid var(--line); border-radius:14px; margin-bottom:11px; }
+.opt .oic{ width:38px; height:38px; flex:0 0 38px; border-radius:50%; display:grid; place-items:center; background:#39414f; overflow:hidden; }
+.opt .oname{ flex:1; min-width:0; font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:9px; }
+.opt .cnt{ font-size:11px; font-weight:700; color:var(--muted); background:#2a3140; border-radius:999px; padding:2px 8px; }
+.opt .addbtn2{ display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--text); font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; flex:0 0 auto; }
+.opt .addbtn2 svg{ width:15px; height:15px; }
+.opt .addbtn2:active{ transform:scale(.95); }
+.no-res{ text-align:center; color:var(--muted); padding:48px 0; font-size:14px; }
+
+.formcard{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
+.formcard-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.formcard-h .l{ display:flex; align-items:center; gap:11px; font-size:15px; font-weight:700; }
+.formcard-h .oic{ width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#39414f; overflow:hidden; }
+.formcard-h .info{ width:26px; height:26px; border-radius:50%; background:#2a3140; border:none; color:var(--muted); cursor:pointer; display:grid; place-items:center; }
+.forminput{ width:100%; font-family:inherit; font-size:14.5px; color:var(--text); background:var(--bg); border:1px solid var(--line-2); border-radius:11px; padding:13px 14px; outline:none; }
+.forminput:focus{ border-color:var(--purple); box-shadow:0 0 0 3px rgba(124,108,255,.16); }
+.pastebtn{ width:100%; height:48px; margin-top:12px; border-radius:11px; border:none; cursor:pointer; background:#2a3140; color:#fff; font-family:inherit; font-size:14.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:9px; }
+.pastebtn:hover{ background:#323a47; }
+.testbtn{ width:100%; height:52px; margin-top:12px; border-radius:11px; border:none; cursor:pointer; background:#3d4350; color:#fff; font-family:inherit; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:9px; }
+.testbtn:hover{ background:#474e5c; }
+.addtitle{ width:100%; height:50px; margin-top:14px; border-radius:13px; border:none; cursor:pointer; background:#222a36; color:#fff; font-family:inherit; font-size:14.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; }
+.removebtn{ width:100%; height:48px; margin-top:14px; border-radius:12px; border:1px solid rgba(240,85,106,.3); background:rgba(240,85,106,.1); color:var(--danger); font-family:inherit; font-weight:700; cursor:pointer; }
+.fs-foot{ flex:0 0 auto; padding:14px 18px calc(16px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--line); }
+.submitbtn{ width:100%; height:54px; border-radius:14px; border:none; cursor:pointer; background:#3d4350; color:#fff; font-family:inherit; font-size:15.5px; font-weight:700; }
+.submitbtn:hover:not(:disabled){ background:#474e5c; }
+.submitbtn:disabled{ opacity:.45; cursor:not-allowed; }
+
 .toast{ position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px); background:#fff; color:#11151c;
   font-weight:700; font-size:13.5px; padding:11px 18px; border-radius:999px; box-shadow:0 12px 30px rgba(0,0,0,.4);
   opacity:0; pointer-events:none; transition:.26s; z-index:90; }
@@ -293,7 +335,7 @@ img,svg{ display:block; }
       <!-- PROFILE CONTENT -->
       <span class="sec-label">Profile content</span>
       <div class="content-list" id="contentList"><!-- rendered --></div>
-      <button class="addbtn" onclick="openContent()">
+      <button class="addbtn" onclick="openAddPanel()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         Add Content
       </button>
@@ -348,19 +390,49 @@ img,svg{ display:block; }
     </div>
   </div>
 
-  <!-- ===== Content modal ===== -->
-  <div class="overlay" id="contentModal" onclick="if(event.target===this)close_('contentModal')">
-    <div class="modal">
-      <button class="x" onclick="close_('contentModal')">✕</button>
-      <h3 id="contentTitle">Add content</h3>
-      <label class="mlabel">Platform</label>
-      <div class="typegrid" id="typeGrid"></div>
-      <label class="mlabel" id="valLabel">Username / URL</label>
-      <input class="minput" id="c-value" placeholder="username" />
-      <div class="mactions">
-        <button class="btn-del" id="c-delete" style="display:none" onclick="deleteContent()">Delete</button>
-        <div class="btn-row"><button class="btn-ghost" onclick="close_('contentModal')">Cancel</button><button class="btn-primary" onclick="saveContent()">Save</button></div>
+  <!-- ===== Add Content panel (categorized list + search) ===== -->
+  <div class="fs" id="addPanel">
+    <div class="fs-col">
+      <div class="fs-head">
+        <button class="back" onclick="closeAddPanel()" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+        <h2>Add Content</h2>
       </div>
+      <div class="fs-search">
+        <div class="box">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="addSearch" placeholder="Search content types" autocomplete="off" oninput="renderAddPanel()" />
+        </div>
+      </div>
+      <div class="fs-body" id="addBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== Add / Edit a content item ===== -->
+  <div class="fs form" id="addForm">
+    <div class="fs-col">
+      <div class="fs-head">
+        <button class="back" onclick="backToPanel()" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+        <h2 id="formTitle">Add</h2>
+      </div>
+      <div class="fs-body">
+        <div class="formcard">
+          <div class="formcard-h">
+            <span class="l"><span class="oic" id="formIcon"></span><span id="formLabel">Email</span></span>
+            <button class="info" onclick="toast('Enter the value, then tap Test to check it')" aria-label="Info">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg>
+            </button>
+          </div>
+          <input class="forminput" id="formInput" autocomplete="off" oninput="onFormInput()" />
+          <button class="pastebtn" id="pasteTestBtn" onclick="pasteOrTest()"><span id="ptIcon"></span><span id="ptLabel">Paste</span></button>
+        </div>
+        <div id="titleWrap" style="display:none"><input class="forminput" id="formTitleInput" placeholder="Title (optional)" autocomplete="off" style="margin-top:14px" /></div>
+        <button class="addtitle" id="addTitleBtn" onclick="toggleTitle()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add Title
+        </button>
+        <button class="removebtn" id="removeBtn" style="display:none" onclick="deleteCurrent()">Remove</button>
+      </div>
+      <div class="fs-foot"><button class="submitbtn" id="submitBtn" onclick="submitAdd()" disabled>Add</button></div>
     </div>
   </div>
 
@@ -411,21 +483,7 @@ const COLORS = [
 ];
 const ICON_STYLES = ['gradient','light','white','black'];
 
-/* platform catalogue: brand colour + glyph + default sub label */
-const PLATFORMS = {
-  instagram:{label:'Instagram', bg:'linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf)', glyph:'ig', base:'instagram.com/'},
-  telegram :{label:'Telegram',  bg:'#229ED9', glyph:'tg', base:'t.me/'},
-  phone    :{label:'Phone',     bg:'#22c55e', glyph:'ph', base:'tel:'},
-  email    :{label:'Email',     bg:'#ef4444', glyph:'em', base:'mailto:'},
-  website  :{label:'Website',   bg:'#6c5ce7', glyph:'web',base:''},
-  tiktok   :{label:'TikTok',    bg:'#111317', glyph:'tk', base:'tiktok.com/@'},
-  youtube  :{label:'YouTube',   bg:'#ff0000', glyph:'yt', base:'youtube.com/@'},
-  linkedin :{label:'LinkedIn',  bg:'#0a66c2', glyph:'li', base:'linkedin.com/in/'},
-  facebook :{label:'Facebook',  bg:'#1877f2', glyph:'fb', base:'facebook.com/'},
-  whatsapp :{label:'WhatsApp',  bg:'#25d366', glyph:'wa', base:'wa.me/'},
-  x        :{label:'X',         bg:'#111317', glyph:'x',  base:'x.com/'},
-  snapchat :{label:'Snapchat',  bg:'#fffc00', glyph:'sc', base:'snapchat.com/add/'}
-};
+/* ---- white glyphs (platforms without one fall back to a letter monogram) ---- */
 const GLYPH = {
   ig:'<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="#fff"/>',
   tg:'<path d="M21.5 4 2.8 11.2c-.9.4-.9 1.6 0 1.9l4.7 1.5 1.8 5.6c.3.8 1.3 1 1.9.3l2.5-2.6 4.8 3.5c.7.5 1.7.1 1.9-.7L23 5.3c.2-1-.7-1.8-1.5-1.3z" fill="#fff"/>',
@@ -433,13 +491,119 @@ const GLYPH = {
   em:'<rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M4 7l8 6 8-6" fill="none" stroke="#fff" stroke-width="2"/>',
   web:'<circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="2"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z" fill="none" stroke="#fff" stroke-width="2"/>',
   tk:'<path d="M14 3c.3 2.3 1.8 4 4 4.3V10c-1.5 0-2.9-.5-4-1.3V15a5 5 0 1 1-5-5v2.7a2.3 2.3 0 1 0 2.3 2.3V3H14z" fill="#fff"/>',
-  yt:'<rect x="3" y="6" width="18" height="12" rx="3" fill="#fff"/><path d="M11 9.5v5l4-2.5z" fill="#ff0000"/>',
-  li:'<rect x="3" y="3" width="18" height="18" rx="3" fill="#fff"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4" fill="none" stroke="#0a66c2" stroke-width="2" stroke-linecap="round"/>',
+  yt:'<rect x="3" y="6" width="18" height="12" rx="3" fill="#fff"/><path d="M11 9.5v5l4-2.5z" fill="#222"/>',
+  li:'<rect x="3" y="3" width="18" height="18" rx="3" fill="#fff"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round"/>',
   fb:'<path d="M14 8h2V5h-2c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2l1-3h-3V8z" fill="#fff"/>',
   wa:'<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.6-1.3A9 9 0 1 0 12 3z" fill="none" stroke="#fff" stroke-width="2"/><path d="M9 9c0 4 2 6 6 6 .5 0 1-1 1-1l-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2s-1 .5-1.5.5z" fill="#fff"/>',
   x:'<path d="M4 4l16 16M20 4L4 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
-  sc:'<path d="M12 3c2.5 0 4 1.7 4 4 0 1 .2 2.5-.3 3.4 1 .6 2 .2 2.3 1 .3 1-1.4 1.2-2.2 1.6.6 1.6 2.4 2.6 3.4 2.8.6.1.4.9-.1 1.1-1 .5-1.4.3-1.8.9-.3.5.1 1-.7 1.1-.7.1-1.3-.6-2.1-.3-1 .4-1.4 1.4-2.5 1.4s-1.5-1-2.5-1.4c-.8-.3-1.4.4-2.1.3-.8-.1-.4-.6-.7-1.1-.4-.6-.8-.4-1.8-.9-.5-.2-.7-1-.1-1.1 1-.2 2.8-1.2 3.4-2.8-.8-.4-2.5-.6-2.2-1.6.3-.8 1.3-.4 2.3-1-.5-.9-.3-2.4-.3-3.4 0-2.3 1.5-4 4-4z" fill="#111"/>'
+  sc:'<path d="M12 3c2.4 0 3.8 1.7 3.8 3.9 0 .9.2 2.3-.3 3.2 1 .6 1.9.2 2.2.9.3 1-1.3 1.2-2.1 1.5.6 1.5 2.3 2.5 3.2 2.7.5.1.4.9-.1 1-.9.5-1.3.3-1.7.9-.3.5.1.9-.7 1-.7.1-1.2-.5-2-.3-.9.4-1.3 1.3-2.4 1.3s-1.5-.9-2.4-1.3c-.8-.2-1.3.4-2 .3-.8-.1-.4-.5-.7-1-.4-.6-.8-.4-1.7-.9-.5-.1-.6-.9-.1-1 .9-.2 2.6-1.2 3.2-2.7-.8-.3-2.4-.5-2.1-1.5.3-.7 1.2-.3 2.2-.9-.5-.9-.3-2.3-.3-3.2C8.2 4.7 9.6 3 12 3z" fill="#fff"/>',
+  addr:'<path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="10" r="2.4" fill="#fff"/>',
+  dc:'<path d="M18.5 6.5A15 15 0 0 0 15 5.4l-.2.4a13 13 0 0 1 3 1.5 12 12 0 0 0-9.6 0 13 13 0 0 1 3-1.5L11 5.4A15 15 0 0 0 7.5 6.5C5.5 9.4 5 12.3 5.2 15.2A14 14 0 0 0 8.6 17l.7-1.1a8 8 0 0 1-1.2-.6l.3-.2a9 9 0 0 0 7.2 0l.3.2a8 8 0 0 1-1.2.6l.7 1.1a14 14 0 0 0 3.4-1.8c.3-3.4-.5-6.3-2.3-8.7zM9.8 13.8a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zm4.4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6z" fill="#fff"/>',
+  gh:'<path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.3-1.1.6-1.4-2.2-.2-4.5-1.1-4.5-4.9a4 4 0 0 1 1-2.7c-.1-.3-.5-1.3.1-2.7 0 0 .9-.3 2.8 1a9 9 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7a4 4 0 0 1 1 2.7c0 3.8-2.3 4.7-4.5 4.9.3.3.6.9.6 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" fill="#fff"/>',
+  pin:'<path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.1-2 0-2.9l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.6 1.3 1.5 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.1-2.3 3.1-5 0-2.1-1.5-3.6-4.1-3.6a4.7 4.7 0 0 0-4.9 4.7c0 .9.3 1.6.8 2 .2.2.2.3.1.5l-.2.9c-.1.3-.3.4-.6.2-1.2-.5-1.7-1.9-1.7-3.1 0-2.6 2.1-5.6 6.5-5.6 3.5 0 5.8 2.5 5.8 5.2 0 3.6-2 6.3-4.9 6.3-1 0-1.9-.5-2.2-1.1l-.6 2.3c-.2.8-.7 1.7-1.1 2.3A10 10 0 1 0 12 2z" fill="#fff"/>',
+  sp:'<circle cx="12" cy="12" r="10" fill="#fff"/><path d="M7 9.5c3-.8 6.5-.5 9 1M7.5 12.5c2.5-.6 5.3-.3 7.3 1M8 15.2c2-.4 4.2-.2 5.8.9" fill="none" stroke="#222" stroke-width="1.6" stroke-linecap="round"/>'
 };
+/* brand colours for well-known platforms (used by the saved content list) */
+const BRAND = { instagram:'linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf)', telegram:'#229ED9', telegramchannel:'#229ED9', phone:'#22c55e', email:'#ef4444', website:'#6c5ce7', tiktok:'#111317', youtube:'#ff0000', linkedin:'#0a66c2', facebook:'#1877f2', whatsapp:'#25d366', whatsappchannel:'#25d366', x:'#111317', snapchat:'#0fb', discord:'#5865F2', discordserver:'#5865F2', github:'#181717', pinterest:'#E60023', spotify:'#1DB954', address:'#22c55e' };
+
+/* full catalogue: key, label, category, glyph, input kind, prefix, placeholder */
+const CATALOG = [
+  /* contact */
+  {key:'website',label:'Website',cat:'contact',g:'web',kind:'url',ph:'https://yoursite.com'},
+  {key:'email',label:'Email',cat:'contact',g:'em',kind:'email',ph:'email'},
+  {key:'phone',label:'Phone',cat:'contact',g:'ph',kind:'tel',ph:'phone number'},
+  {key:'address',label:'Address',cat:'contact',g:'addr',kind:'text',ph:'your address'},
+  {key:'whatsapp',label:'WhatsApp',cat:'contact',g:'wa',kind:'wa',ph:'phone number'},
+  {key:'discord',label:'Discord',cat:'contact',g:'dc',kind:'url',ph:'discord profile / invite'},
+  {key:'wechat',label:'WeChat',cat:'contact',kind:'text',ph:'WeChat ID'},
+  {key:'telegram',label:'Telegram',cat:'contact',g:'tg',kind:'user',pre:'https://t.me/',ph:'username'},
+  {key:'signal',label:'Signal',cat:'contact',kind:'url',ph:'signal.me link'},
+  /* social */
+  {key:'linkedin',label:'LinkedIn',cat:'social',g:'li',kind:'user',pre:'https://linkedin.com/in/',ph:'username'},
+  {key:'instagram',label:'Instagram',cat:'social',g:'ig',kind:'user',pre:'https://instagram.com/',ph:'username'},
+  {key:'x',label:'X (Twitter)',cat:'social',g:'x',kind:'user',pre:'https://x.com/',ph:'username'},
+  {key:'facebook',label:'Facebook',cat:'social',g:'fb',kind:'user',pre:'https://facebook.com/',ph:'username'},
+  {key:'youtube',label:'YouTube',cat:'social',g:'yt',kind:'user',pre:'https://youtube.com/@',ph:'@handle'},
+  {key:'tiktok',label:'TikTok',cat:'social',g:'tk',kind:'user',pre:'https://tiktok.com/@',ph:'@username'},
+  {key:'pinterest',label:'Pinterest',cat:'social',g:'pin',kind:'user',pre:'https://pinterest.com/',ph:'username'},
+  {key:'vimeo',label:'Vimeo',cat:'social',kind:'user',pre:'https://vimeo.com/',ph:'username'},
+  {key:'snapchat',label:'Snapchat',cat:'social',g:'sc',kind:'user',pre:'https://snapchat.com/add/',ph:'username'},
+  {key:'twitch',label:'Twitch',cat:'social',kind:'user',pre:'https://twitch.tv/',ph:'username'},
+  {key:'threads',label:'Threads',cat:'social',kind:'user',pre:'https://threads.net/@',ph:'@username'},
+  {key:'clubhouse',label:'Clubhouse',cat:'social',kind:'user',pre:'https://clubhouse.com/@',ph:'@username'},
+  /* rich */
+  {key:'document',label:'Document',cat:'rich',kind:'url',ph:'file / document URL'},
+  {key:'textblock',label:'Text Block',cat:'rich',kind:'text',ph:'your text'},
+  {key:'divider',label:'Divider',cat:'rich',kind:'divider',ph:''},
+  /* productivity */
+  {key:'calendly',label:'Calendly',cat:'productivity',kind:'user',pre:'https://calendly.com/',ph:'username'},
+  {key:'notion',label:'Notion',cat:'productivity',kind:'url',ph:'notion.so/...'},
+  {key:'gdrive',label:'Google Drive',cat:'productivity',kind:'url',ph:'drive.google.com/...'},
+  {key:'yelp',label:'Yelp',cat:'productivity',kind:'url',ph:'yelp.com/biz/...'},
+  {key:'googlereviews',label:'Google Reviews',cat:'productivity',kind:'url',ph:'review link'},
+  {key:'etsy',label:'Etsy',cat:'productivity',kind:'user',pre:'https://etsy.com/shop/',ph:'shop name'},
+  {key:'booksy',label:'Booksy',cat:'productivity',kind:'url',ph:'booksy.com/...'},
+  {key:'appstore',label:'App Store',cat:'productivity',kind:'url',ph:'apps.apple.com/...'},
+  {key:'googleplay',label:'Google Play',cat:'productivity',kind:'url',ph:'play.google.com/...'},
+  {key:'zillow',label:'Zillow',cat:'productivity',kind:'url',ph:'zillow.com/...'},
+  {key:'medium',label:'Medium',cat:'productivity',kind:'user',pre:'https://medium.com/@',ph:'@username'},
+  {key:'behance',label:'Behance',cat:'productivity',kind:'user',pre:'https://behance.net/',ph:'username'},
+  {key:'dribbble',label:'Dribbble',cat:'productivity',kind:'user',pre:'https://dribbble.com/',ph:'username'},
+  {key:'github',label:'GitHub',cat:'productivity',g:'gh',kind:'user',pre:'https://github.com/',ph:'username'},
+  /* payment */
+  {key:'venmo',label:'Venmo',cat:'payment',kind:'user',pre:'https://venmo.com/',ph:'@username'},
+  {key:'cashapp',label:'Cash App',cat:'payment',kind:'user',pre:'https://cash.app/$',ph:'cashtag'},
+  {key:'zelle',label:'Zelle',cat:'payment',kind:'text',ph:'email or phone'},
+  {key:'paypal',label:'PayPal',cat:'payment',kind:'user',pre:'https://paypal.me/',ph:'username'},
+  /* music */
+  {key:'spotify',label:'Spotify',cat:'music',g:'sp',kind:'url',ph:'spotify link'},
+  {key:'soundcloud',label:'SoundCloud',cat:'music',kind:'user',pre:'https://soundcloud.com/',ph:'username'},
+  {key:'applemusic',label:'Apple Music',cat:'music',kind:'url',ph:'music.apple.com/...'},
+  {key:'itunes',label:'iTunes',cat:'music',kind:'url',ph:'itunes link'},
+  {key:'beatport',label:'Beatport',cat:'music',kind:'url',ph:'beatport.com/...'},
+  {key:'deezer',label:'Deezer',cat:'music',kind:'url',ph:'deezer.com/...'},
+  {key:'tidal',label:'Tidal',cat:'music',kind:'url',ph:'tidal.com/...'},
+  {key:'ytmusic',label:'YouTube Music',cat:'music',kind:'url',ph:'music.youtube.com/...'},
+  {key:'bandcamp',label:'Bandcamp',cat:'music',kind:'url',ph:'name.bandcamp.com'},
+  {key:'amazonmusic',label:'Amazon Music',cat:'music',kind:'url',ph:'music.amazon.com/...'},
+  {key:'applepodcasts',label:'Apple Podcasts',cat:'music',kind:'url',ph:'podcasts.apple.com/...'},
+  /* more */
+  {key:'patreon',label:'Patreon',cat:'more',kind:'user',pre:'https://patreon.com/',ph:'username'},
+  {key:'substack',label:'Substack',cat:'more',kind:'url',ph:'name.substack.com'},
+  {key:'kofi',label:'Ko-fi',cat:'more',kind:'user',pre:'https://ko-fi.com/',ph:'username'},
+  {key:'bmac',label:'Buy Me a Coffee',cat:'more',kind:'user',pre:'https://buymeacoffee.com/',ph:'username'},
+  {key:'onlyfans',label:'OnlyFans',cat:'more',kind:'user',pre:'https://onlyfans.com/',ph:'username'},
+  {key:'reddit',label:'Reddit',cat:'more',kind:'user',pre:'https://reddit.com/user/',ph:'username'},
+  {key:'tumblr',label:'Tumblr',cat:'more',kind:'user',pre:'https://tumblr.com/',ph:'username'},
+  {key:'flickr',label:'Flickr',cat:'more',kind:'user',pre:'https://flickr.com/photos/',ph:'username'},
+  {key:'vsco',label:'VSCO',cat:'more',kind:'user',pre:'https://vsco.co/',ph:'username'},
+  {key:'mixcloud',label:'Mixcloud',cat:'more',kind:'user',pre:'https://mixcloud.com/',ph:'username'},
+  {key:'anchor',label:'Anchor',cat:'more',kind:'url',ph:'anchor.fm/...'},
+  {key:'rumble',label:'Rumble',cat:'more',kind:'user',pre:'https://rumble.com/',ph:'username'},
+  {key:'kick',label:'Kick',cat:'more',kind:'user',pre:'https://kick.com/',ph:'username'},
+  {key:'steam',label:'Steam',cat:'more',kind:'user',pre:'https://steamcommunity.com/id/',ph:'username'},
+  {key:'discordserver',label:'Discord Server',cat:'more',g:'dc',kind:'url',ph:'discord.gg/...'},
+  {key:'telegramchannel',label:'Telegram Channel',cat:'more',g:'tg',kind:'user',pre:'https://t.me/',ph:'channel'},
+  {key:'whatsappchannel',label:'WhatsApp Channel',cat:'more',g:'wa',kind:'url',ph:'whatsapp channel link'},
+  {key:'linktree',label:'Linktree',cat:'more',kind:'user',pre:'https://linktr.ee/',ph:'username'},
+  {key:'gumroad',label:'Gumroad',cat:'more',kind:'user',pre:'https://gumroad.com/',ph:'username'},
+  {key:'shopify',label:'Shopify',cat:'more',kind:'url',ph:'yourstore.myshopify.com'},
+  {key:'stripe',label:'Stripe',cat:'more',kind:'url',ph:'stripe payment link'},
+  {key:'binancepay',label:'Binance Pay',cat:'more',kind:'text',ph:'Binance Pay ID'},
+  {key:'coinbase',label:'Coinbase',cat:'more',kind:'url',ph:'coinbase.com/...'},
+  {key:'messenger',label:'Messenger',cat:'more',kind:'user',pre:'https://m.me/',ph:'username'},
+  {key:'skype',label:'Skype',cat:'more',kind:'text',ph:'skype id'},
+  {key:'zoom',label:'Zoom',cat:'more',kind:'url',ph:'zoom meeting link'},
+  {key:'teams',label:'Microsoft Teams',cat:'more',kind:'url',ph:'teams link'},
+  {key:'googlemeet',label:'Google Meet',cat:'more',kind:'url',ph:'meet.google.com/...'}
+];
+const CAT = {}; CATALOG.forEach(it => CAT[it.key] = it);
+const RECOMMENDED = ['phone','email','website','linkedin','instagram'];
+const GROUPS = [
+  ['Contact Info','contact'], ['Social Links','social'], ['Rich Content','rich'],
+  ['Productivity Links','productivity'], ['Payment Links','payment'], ['Music Links','music'],
+  ['Additional Platforms','more']
+];
 
 function defaults(){
   let name = 'Abdulaziz Xoldaqulov';
@@ -602,65 +766,140 @@ function saveBio(){
 
 
 /* ============================ Profile content ============================ */
-function iconCircle(type, style){
-  const pf=PLATFORMS[type]||PLATFORMS.website;
-  let bg=pf.bg, stroke='#fff';
-  if(style==='light'){ bg='#e9edf3'; }
-  else if(style==='white'){ bg='#ffffff'; }
-  else if(style==='black'){ bg='#15181f'; }
-  // recolor glyph for light/white styles
-  let glyph=GLYPH[pf.glyph];
-  if(style==='light'||style==='white'){ glyph = glyph.replace(/#fff/g,'#15181f').replace(/stroke="#fff"/g,'stroke="#15181f"'); }
-  return `<span style="width:100%;height:100%;display:grid;place-items:center;background:${bg}">
-      <svg width="20" height="20" viewBox="0 0 24 24">${glyph}</svg></span>`;
+/* glyph (svg) or a letter monogram, optionally dark for light icon styles */
+function innerGlyph(key, dark){
+  const it=CAT[key]||{};
+  if(it.g && GLYPH[it.g]){
+    let g=`<svg width="20" height="20" viewBox="0 0 24 24">${GLYPH[it.g]}</svg>`;
+    if(dark) g=g.replace(/#fff/g,'#15181f').replace(/stroke="#fff"/g,'stroke="#15181f"');
+    return g;
+  }
+  const ltr=((it.label||'?').trim()[0]||'?').toUpperCase();
+  return `<span style="font-weight:700;font-size:15px;color:${dark?'#15181f':'#fff'}">${esc(ltr)}</span>`;
+}
+function iconCircle(key, style){
+  let bg=BRAND[key]||'#39414f', dark=false;
+  if(style==='light'){ bg='#e9edf3'; dark=true; }
+  else if(style==='white'){ bg='#ffffff'; dark=true; }
+  else if(style==='black'){ bg='#15181f'; dark=false; }
+  return `<span style="width:100%;height:100%;display:grid;place-items:center;background:${bg}">${innerGlyph(key,dark)}</span>`;
 }
 function renderContent(){
   const list=document.getElementById('contentList');
   list.innerHTML = P.content.map((c,i)=>{
-    const pf=PLATFORMS[c.type]||PLATFORMS.website;
+    const it=CAT[c.type]||{label:c.type};
+    const sub = it.kind==='divider' ? '—' : (c.value||'');
     return `<div class="citem" draggable="true" data-i="${i}">
       <span class="handle" title="Drag"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
       <span class="cic">${iconCircle(c.type, P.iconStyle)}</span>
-      <span class="grow"><div class="ct">${esc(pf.label)}</div><div class="cs">${esc(c.value||pf.base)}</div></span>
-      <button class="edit" onclick="openContent('${c.id}')" aria-label="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
+      <span class="grow"><div class="ct">${esc(c.title||it.label)}</div><div class="cs">${esc(sub)}</div></span>
+      <button class="edit" onclick="editContent('${c.id}')" aria-label="Edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg></button>
     </div>`;
   }).join('');
   enableDrag();
 }
-let editingContentId=null, selectedType='instagram';
-function openContent(id){
-  editingContentId = id || null;
-  buildTypeGrid();
-  const del = document.getElementById('c-delete');
-  if(editingContentId){
-    const c=P.content.find(x=>x.id===editingContentId);
-    document.getElementById('contentTitle').textContent='Edit content';
-    selectedType=c.type; document.getElementById('c-value').value=c.value||'';
-    del.style.display='block';
-  }else{
-    document.getElementById('contentTitle').textContent='Add content';
-    selectedType='instagram'; document.getElementById('c-value').value='';
-    del.style.display='none';
+
+/* ---- Add Content panel ---- */
+function show(id){ document.getElementById(id).classList.add('show'); }
+function hide(id){ document.getElementById(id).classList.remove('show'); }
+function openAddPanel(){ document.getElementById('addSearch').value=''; renderAddPanel(); show('addPanel'); }
+function closeAddPanel(){ hide('addPanel'); }
+function rowHTML(key){
+  const it=CAT[key]; const n=P.content.filter(c=>c.type===key).length;
+  return `<div class="opt">
+    <span class="oic">${innerGlyph(key,false)}</span>
+    <span class="oname">${esc(it.label)}${n?`<span class="cnt">${n}</span>`:''}</span>
+    <button class="addbtn2" onclick="openAddForm('${key}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add</button>
+  </div>`;
+}
+function renderAddPanel(){
+  const q=(document.getElementById('addSearch').value||'').trim().toLowerCase();
+  let html='', any=false;
+  if(!q){ html += `<div class="cat-label">Recommended Content</div>` + RECOMMENDED.map(rowHTML).join(''); any=true; }
+  GROUPS.forEach(([label,cat])=>{
+    let keys=CATALOG.filter(x=>x.cat===cat).map(x=>x.key);
+    if(q) keys=keys.filter(k=>CAT[k].label.toLowerCase().includes(q));
+    if(keys.length){ any=true; html += `<div class="cat-label">${label}</div>` + keys.map(rowHTML).join(''); }
+  });
+  document.getElementById('addBody').innerHTML = any ? html : `<div class="no-res">No content types found</div>`;
+}
+
+/* ---- Add / Edit form ---- */
+const ARROW_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>';
+const PASTE_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>';
+const form={key:null, editingId:null};
+function openAddForm(key, editingId){
+  form.key=key; form.editingId=editingId||null;
+  const it=CAT[key]; if(!it) return;
+  document.getElementById('formTitle').textContent=(form.editingId?'Edit ':'Add ')+it.label;
+  document.getElementById('formLabel').textContent=it.label;
+  document.getElementById('formIcon').innerHTML=innerGlyph(key,false);
+  const inp=document.getElementById('formInput'), btn=document.getElementById('pasteTestBtn');
+  if(it.kind==='divider'){ inp.style.display='none'; btn.style.display='none'; }
+  else { inp.style.display=''; btn.style.display=''; inp.placeholder=it.ph||''; }
+  let v='', t='';
+  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c){ v=c.value||''; t=c.title||''; } }
+  inp.value=v;
+  document.getElementById('formTitleInput').value=t;
+  document.getElementById('titleWrap').style.display = t?'block':'none';
+  document.getElementById('addTitleBtn').style.display = t?'none':'';
+  document.getElementById('removeBtn').style.display = form.editingId?'block':'none';
+  document.getElementById('submitBtn').textContent = form.editingId?'Save':'Add';
+  onFormInput();
+  show('addForm');
+  if(it.kind!=='divider') setTimeout(()=>inp.focus(),60);
+}
+function backToPanel(){ hide('addForm'); }
+function closeAll(){ hide('addForm'); hide('addPanel'); }
+function editContent(id){ const c=P.content.find(x=>x.id===id); if(c) openAddForm(c.type, id); }
+function toggleTitle(){ document.getElementById('titleWrap').style.display='block'; document.getElementById('addTitleBtn').style.display='none'; document.getElementById('formTitleInput').focus(); }
+function onFormInput(){
+  const it=CAT[form.key]; const v=document.getElementById('formInput').value.trim();
+  const btn=document.getElementById('pasteTestBtn');
+  if(it.kind==='divider'){ document.getElementById('submitBtn').disabled=false; return; }
+  if(v){ btn.className='testbtn'; document.getElementById('ptLabel').textContent='Test'; document.getElementById('ptIcon').innerHTML=ARROW_SVG; }
+  else { btn.className='pastebtn'; document.getElementById('ptLabel').textContent='Paste'; document.getElementById('ptIcon').innerHTML=PASTE_SVG; }
+  document.getElementById('submitBtn').disabled = !validValue(form.key, v);
+}
+function validValue(key,v){
+  const it=CAT[key]||{}; if(it.kind==='divider') return true; if(!v) return false;
+  if(it.kind==='email') return /\S+@\S+\.\S+/.test(v);
+  if(it.kind==='tel'||it.kind==='wa') return v.replace(/[^\d]/g,'').length>=5;
+  return true;
+}
+function resolve(key,v){
+  const it=CAT[key]||{}; v=(v||'').trim(); if(!v) return '';
+  if(key==='address') return 'https://maps.google.com/?q='+encodeURIComponent(v);
+  switch(it.kind){
+    case 'email': return 'mailto:'+v;
+    case 'tel':   return 'tel:'+v.replace(/[^\d+]/g,'');
+    case 'wa':    return 'https://wa.me/'+v.replace(/[^\d]/g,'');
+    case 'text':  return /^https?:\/\//i.test(v)?v:'';
+    case 'user':  return /^https?:\/\//i.test(v)?v:(it.pre||'')+v.replace(/^@/,'');
+    case 'url':
+    default:      return /^https?:\/\//i.test(v)?v:'https://'+v;
   }
-  markType();
-  open_('contentModal');
 }
-function buildTypeGrid(){
-  document.getElementById('typeGrid').innerHTML = Object.keys(PLATFORMS).map(t=>{
-    const pf=PLATFORMS[t];
-    return `<button type="button" class="typeopt" data-t="${t}" onclick="pickType('${t}')">
-      <span class="tic" style="background:${pf.bg}"><svg width="18" height="18" viewBox="0 0 24 24">${GLYPH[pf.glyph]}</svg></span>${esc(pf.label)}</button>`;
-  }).join('');
+function pasteOrTest(){
+  const inp=document.getElementById('formInput'), v=inp.value.trim();
+  if(v){
+    const href=resolve(form.key,v);
+    if(href){ if(href.startsWith('mailto:')||href.startsWith('tel:')) location.href=href; else window.open(href,'_blank','noopener'); }
+    else toast('Nothing to open for this value');
+  } else {
+    if(navigator.clipboard && navigator.clipboard.readText){
+      navigator.clipboard.readText().then(t=>{ inp.value=(t||'').trim(); onFormInput(); }).catch(()=>toast('Clipboard not available'));
+    } else toast('Clipboard not available');
+  }
 }
-function pickType(t){ selectedType=t; markType(); const pf=PLATFORMS[t]; const v=document.getElementById('c-value'); if(!v.value) v.placeholder=pf.base||'https://…'; }
-function markType(){ document.querySelectorAll('.typeopt').forEach(o=>o.classList.toggle('sel', o.dataset.t===selectedType)); }
-function saveContent(){
-  const val=document.getElementById('c-value').value.trim() || (PLATFORMS[selectedType].base||'');
-  if(editingContentId){ const c=P.content.find(x=>x.id===editingContentId); c.type=selectedType; c.value=val; toast('Updated'); }
-  else{ P.content.push({id:'c'+Date.now(), type:selectedType, value:val}); toast('Content added'); }
-  save(); renderContent(); close_('contentModal');
+function submitAdd(){
+  const it=CAT[form.key]; const v=document.getElementById('formInput').value.trim(); const t=document.getElementById('formTitleInput').value.trim();
+  if(it.kind!=='divider' && !validValue(form.key,v)) return;
+  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c){ c.value=v; c.title=t; } toast('Saved'); }
+  else { P.content.push({id:'c'+Date.now(), type:form.key, value:v, title:t}); toast('Added'); }
+  save(); renderContent(); closeAll();
 }
-function deleteContent(){ P.content=P.content.filter(x=>x.id!==editingContentId); save(); renderContent(); close_('contentModal'); toast('Removed'); }
+function deleteCurrent(){ if(form.editingId){ P.content=P.content.filter(x=>x.id!==form.editingId); save(); renderContent(); } closeAll(); toast('Removed'); }
 
 /* drag reorder */
 let dragI=null;
