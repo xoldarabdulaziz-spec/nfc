@@ -267,6 +267,10 @@ img,svg{ display:block; }
 .opt .addbtn2 svg{ width:15px; height:15px; }
 .opt .addbtn2:active{ transform:scale(.95); }
 .no-res{ text-align:center; color:var(--muted); padding:48px 0; font-size:14px; }
+.showmore{ display:inline-flex; align-items:center; gap:6px; background:none; border:none; color:var(--text); font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; margin:0 4px 18px; padding:4px 2px; }
+.showmore svg{ width:15px; height:15px; transition:transform .2s; }
+.showmore.open svg{ transform:rotate(180deg); }
+.showmore:active{ opacity:.7; }
 
 .formcard{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
 .formcard-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
@@ -812,14 +816,30 @@ function rowHTML(key){
     <button class="addbtn2" onclick="openAddForm('${key}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add</button>
   </div>`;
 }
+/* each category limits to 4 items with its own Show more / Show less */
+const catOpen={};
+function toggleCat(id){ catOpen[id]=!catOpen[id]; renderAddPanel(); }
+function groupBlock(label, id, keys, q){
+  if(!keys.length) return '';
+  const open=!!catOpen[id];
+  const limited = !q && keys.length>4 && !open;
+  const visible = limited ? keys.slice(0,4) : keys;
+  let h = `<div class="cat-label">${label}</div>` + visible.map(rowHTML).join('');
+  if(!q && keys.length>4){
+    h += `<button class="showmore${open?' open':''}" onclick="toggleCat('${id}')">${open?'Show less':'Show more'}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>`;
+  }
+  return h;
+}
 function renderAddPanel(){
   const q=(document.getElementById('addSearch').value||'').trim().toLowerCase();
   let html='', any=false;
-  if(!q){ html += `<div class="cat-label">Recommended Content</div>` + RECOMMENDED.map(rowHTML).join(''); any=true; }
+  if(!q){ const r=groupBlock('Recommended Content','recommended',RECOMMENDED,q); if(r){ html+=r; any=true; } }
   GROUPS.forEach(([label,cat])=>{
     let keys=CATALOG.filter(x=>x.cat===cat).map(x=>x.key);
     if(q) keys=keys.filter(k=>CAT[k].label.toLowerCase().includes(q));
-    if(keys.length){ any=true; html += `<div class="cat-label">${label}</div>` + keys.map(rowHTML).join(''); }
+    const block=groupBlock(label,cat,keys,q);
+    if(block){ html+=block; any=true; }
   });
   document.getElementById('addBody').innerHTML = any ? html : `<div class="no-res">No content types found</div>`;
 }
