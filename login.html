@@ -179,8 +179,7 @@ const AUTH = {
   email:    "xoldar.abdulaziz@gmail.com",
   password: "$Abdu$.2008"
 };
-const HOME  = "dashboard.html"; // returning users go straight to the dashboard
-const SETUP = "setup.html";     // first-time users (no profile yet) go to setup
+const HOME = "dashboard.html"; // where to go after a successful login
 
 const form  = document.getElementById('loginForm');
 const errEl = document.getElementById('error');
@@ -199,9 +198,7 @@ form.addEventListener('submit', function(e){
     btn.textContent = "Logging in…";
     btn.disabled = true;
     try{ localStorage.setItem('dot_logged_in','1'); }catch(_){}
-    // first login (no saved profile) -> setup; otherwise -> dashboard
-    let dest = HOME; try{ if(!localStorage.getItem('dot_profile')) dest = SETUP; }catch(_){}
-    setTimeout(()=>{ window.location.href = dest; }, 450);
+    setTimeout(()=>{ window.location.href = HOME; }, 450);
   } else {
     errEl.classList.add('show');
     btn.animate(

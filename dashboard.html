@@ -521,7 +521,7 @@ function render(){
           ${iconBtn('swap','Transfer',`toast('Transfer')`)}
           ${iconBtn('trash','Delete',`deleteSite('${s.id}')`)}
           ${iconBtn('pin','Pin',`toast('Pinned')`)}
-          ${iconBtn('gear','Settings',`toast('Settings')`)}
+          ${iconBtn('gear','Edit profile',`editProfile('${s.id}')`)}
         </div>
         <a class="view-btn" ${view}>View</a>
       </div>
@@ -584,20 +584,30 @@ function saveSite(e){
 
   const domain = sub + DOMAIN_SUFFIX;   // e.g. nfc -> nfc.card.com
 
+  let newId = null;
   if(editingId){
     const s = sites.find(x => x.id === editingId);
     if(s){ s.name = name; s.domain = domain; s.link = link; s.grad = selectedGrad; }
     toast('Site updated');
   } else {
-    sites.unshift({ id:'s'+Date.now(), name, domain, link, grad:selectedGrad });
-    toast('Site added');
+    newId = 's'+Date.now();
+    sites.unshift({ id:newId, name, domain, link, grad:selectedGrad });
   }
   persist();
   render();
   closeModal();
+
+  // a brand-new site opens straight into the profile editor (Setup)
+  if(newId){
+    try{ localStorage.setItem('dot_edit_site', newId); }catch(_){}
+    location.href = 'setup.html';
+  }
 }
 
 function editSite(id){ openModal(id); }
+
+/* open the full profile editor (Setup) for a site */
+function editProfile(id){ try{ localStorage.setItem('dot_edit_site', id); }catch(_){} location.href = 'setup.html'; }
 
 function duplicateSite(id){
   const i = sites.findIndex(x => x.id === id);
