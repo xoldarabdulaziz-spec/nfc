@@ -272,6 +272,28 @@ img,svg{ display:block; }
 .showmore.open svg{ transform:rotate(180deg); }
 .showmore:active{ opacity:.7; }
 
+/* phone input with country selector */
+.phonebox{ display:flex; gap:10px; }
+.cc{ display:flex; align-items:center; gap:7px; flex:0 0 auto; cursor:pointer; padding:0 11px; border-radius:11px;
+  background:var(--bg); border:1px solid var(--line-2); color:var(--text); font-family:inherit; font-size:14px; font-weight:700; }
+.cc:active{ transform:scale(.97); }
+.cc .flag{ width:22px; height:16px; border-radius:2px; object-fit:cover; background:#2a3140; }
+.cc svg{ width:14px; height:14px; color:var(--muted); }
+.phonenum{ flex:1; min-width:0; font-family:inherit; font-size:14.5px; color:var(--text); background:var(--bg);
+  border:1px solid var(--line-2); border-radius:11px; padding:13px 14px; outline:none; }
+.phonenum:focus{ border-color:var(--purple); box-shadow:0 0 0 3px rgba(124,108,255,.16); }
+
+/* country picker panel */
+.fs.country{ z-index:96; }
+.crow{ display:flex; align-items:center; gap:13px; width:100%; padding:13px 6px; background:none; border:none;
+  border-bottom:1px solid var(--line); cursor:pointer; color:var(--text); font-family:inherit; text-align:left; }
+.crow:hover{ background:var(--card); }
+.crow.sel{ background:#222a36; border-radius:10px; }
+.crow .flag{ width:24px; height:18px; border-radius:3px; object-fit:cover; flex:0 0 auto; background:#2a3140; }
+.crow .cn{ flex:1; min-width:0; font-size:14.5px; font-weight:700; }
+.crow .cd{ color:var(--muted); font-size:13.5px; font-weight:700; flex:0 0 auto; }
+.cdiv{ height:10px; border-bottom:1px solid var(--line-2); margin-bottom:6px; }
+
 .formcard{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
 .formcard-h{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
 .formcard-h .l{ display:flex; align-items:center; gap:11px; font-size:15px; font-weight:700; }
@@ -427,6 +449,14 @@ img,svg{ display:block; }
             </button>
           </div>
           <input class="forminput" id="formInput" autocomplete="off" oninput="onFormInput()" />
+          <div class="phonebox" id="phoneBox" style="display:none">
+            <button type="button" class="cc" id="ccBtn" onclick="openCountry()">
+              <img class="flag" id="ccFlag" alt="" />
+              <span id="ccCode">+998</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <input class="phonenum" id="phoneInput" inputmode="tel" autocomplete="off" placeholder="(123) 456-7890" oninput="onFormInput()" />
+          </div>
           <button class="pastebtn" id="pasteTestBtn" onclick="pasteOrTest()"><span id="ptIcon"></span><span id="ptLabel">Paste</span></button>
         </div>
         <div id="titleWrap" style="display:none"><input class="forminput" id="formTitleInput" placeholder="Title (optional)" autocomplete="off" style="margin-top:14px" /></div>
@@ -437,6 +467,23 @@ img,svg{ display:block; }
         <button class="removebtn" id="removeBtn" style="display:none" onclick="deleteCurrent()">Remove</button>
       </div>
       <div class="fs-foot"><button class="submitbtn" id="submitBtn" onclick="submitAdd()" disabled>Add</button></div>
+    </div>
+  </div>
+
+  <!-- ===== Select Country (phone) ===== -->
+  <div class="fs country" id="countryPanel">
+    <div class="fs-col">
+      <div class="fs-head">
+        <button class="back" onclick="closeCountry()" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
+        <h2>Select Country</h2>
+      </div>
+      <div class="fs-search">
+        <div class="box">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="countrySearch" placeholder="Search for country code" autocomplete="off" oninput="renderCountry()" />
+        </div>
+      </div>
+      <div class="fs-body" id="countryBody"></div>
     </div>
   </div>
 
@@ -517,6 +564,7 @@ const CATALOG = [
   {key:'email',label:'Email',cat:'contact',g:'em',kind:'email',ph:'email'},
   {key:'phone',label:'Phone',cat:'contact',g:'ph',kind:'tel',ph:'phone number'},
   {key:'address',label:'Address',cat:'contact',g:'addr',kind:'text',ph:'your address'},
+  {key:'location',label:'Location',cat:'contact',g:'addr',kind:'url',ph:'Google Maps / map link'},
   {key:'whatsapp',label:'WhatsApp',cat:'contact',g:'wa',kind:'wa',ph:'phone number'},
   {key:'discord',label:'Discord',cat:'contact',g:'dc',kind:'url',ph:'discord profile / invite'},
   {key:'wechat',label:'WeChat',cat:'contact',kind:'text',ph:'WeChat ID'},
@@ -608,6 +656,65 @@ const GROUPS = [
   ['Productivity Links','productivity'], ['Payment Links','payment'], ['Music Links','music'],
   ['Additional Platforms','more']
 ];
+
+/* ---- countries (name, iso2 for flag, dial code) ---- */
+const PINNED = ['uz','us','gb','mx'];
+const COUNTRIES = [
+  {n:'Afghanistan',c:'af',d:'+93'},{n:'Åland Islands',c:'ax',d:'+358'},{n:'Albania',c:'al',d:'+355'},{n:'Algeria',c:'dz',d:'+213'},
+  {n:'Andorra',c:'ad',d:'+376'},{n:'Angola',c:'ao',d:'+244'},{n:'Anguilla',c:'ai',d:'+1264'},{n:'Antigua and Barbuda',c:'ag',d:'+1268'},
+  {n:'Argentina',c:'ar',d:'+54'},{n:'Armenia',c:'am',d:'+374'},{n:'Aruba',c:'aw',d:'+297'},{n:'Australia',c:'au',d:'+61'},
+  {n:'Austria',c:'at',d:'+43'},{n:'Azerbaijan',c:'az',d:'+994'},{n:'Bahamas',c:'bs',d:'+1242'},{n:'Bahrain',c:'bh',d:'+973'},
+  {n:'Bangladesh',c:'bd',d:'+880'},{n:'Barbados',c:'bb',d:'+1246'},{n:'Belarus',c:'by',d:'+375'},{n:'Belgium',c:'be',d:'+32'},
+  {n:'Belize',c:'bz',d:'+501'},{n:'Benin',c:'bj',d:'+229'},{n:'Bermuda',c:'bm',d:'+1441'},{n:'Bhutan',c:'bt',d:'+975'},
+  {n:'Bolivia',c:'bo',d:'+591'},{n:'Bosnia and Herzegovina',c:'ba',d:'+387'},{n:'Botswana',c:'bw',d:'+267'},{n:'Brazil',c:'br',d:'+55'},
+  {n:'Brunei',c:'bn',d:'+673'},{n:'Bulgaria',c:'bg',d:'+359'},{n:'Burkina Faso',c:'bf',d:'+226'},{n:'Burundi',c:'bi',d:'+257'},
+  {n:'Cambodia',c:'kh',d:'+855'},{n:'Cameroon',c:'cm',d:'+237'},{n:'Canada',c:'ca',d:'+1'},{n:'Cape Verde',c:'cv',d:'+238'},
+  {n:'Cayman Islands',c:'ky',d:'+1345'},{n:'Central African Republic',c:'cf',d:'+236'},{n:'Chad',c:'td',d:'+235'},{n:'Chile',c:'cl',d:'+56'},
+  {n:'China',c:'cn',d:'+86'},{n:'Colombia',c:'co',d:'+57'},{n:'Comoros',c:'km',d:'+269'},{n:'Congo',c:'cg',d:'+242'},
+  {n:'Congo (DRC)',c:'cd',d:'+243'},{n:'Costa Rica',c:'cr',d:'+506'},{n:"Côte d'Ivoire",c:'ci',d:'+225'},{n:'Croatia',c:'hr',d:'+385'},
+  {n:'Cuba',c:'cu',d:'+53'},{n:'Cyprus',c:'cy',d:'+357'},{n:'Czechia',c:'cz',d:'+420'},{n:'Denmark',c:'dk',d:'+45'},
+  {n:'Djibouti',c:'dj',d:'+253'},{n:'Dominica',c:'dm',d:'+1767'},{n:'Dominican Republic',c:'do',d:'+1809'},{n:'Ecuador',c:'ec',d:'+593'},
+  {n:'Egypt',c:'eg',d:'+20'},{n:'El Salvador',c:'sv',d:'+503'},{n:'Equatorial Guinea',c:'gq',d:'+240'},{n:'Eritrea',c:'er',d:'+291'},
+  {n:'Estonia',c:'ee',d:'+372'},{n:'Eswatini',c:'sz',d:'+268'},{n:'Ethiopia',c:'et',d:'+251'},{n:'Fiji',c:'fj',d:'+679'},
+  {n:'Finland',c:'fi',d:'+358'},{n:'France',c:'fr',d:'+33'},{n:'French Polynesia',c:'pf',d:'+689'},{n:'Gabon',c:'ga',d:'+241'},
+  {n:'Gambia',c:'gm',d:'+220'},{n:'Georgia',c:'ge',d:'+995'},{n:'Germany',c:'de',d:'+49'},{n:'Ghana',c:'gh',d:'+233'},
+  {n:'Gibraltar',c:'gi',d:'+350'},{n:'Greece',c:'gr',d:'+30'},{n:'Greenland',c:'gl',d:'+299'},{n:'Grenada',c:'gd',d:'+1473'},
+  {n:'Guatemala',c:'gt',d:'+502'},{n:'Guernsey',c:'gg',d:'+44'},{n:'Guinea',c:'gn',d:'+224'},{n:'Guinea-Bissau',c:'gw',d:'+245'},
+  {n:'Guyana',c:'gy',d:'+592'},{n:'Haiti',c:'ht',d:'+509'},{n:'Honduras',c:'hn',d:'+504'},{n:'Hong Kong',c:'hk',d:'+852'},
+  {n:'Hungary',c:'hu',d:'+36'},{n:'Iceland',c:'is',d:'+354'},{n:'India',c:'in',d:'+91'},{n:'Indonesia',c:'id',d:'+62'},
+  {n:'Iran',c:'ir',d:'+98'},{n:'Iraq',c:'iq',d:'+964'},{n:'Ireland',c:'ie',d:'+353'},{n:'Isle of Man',c:'im',d:'+44'},
+  {n:'Israel',c:'il',d:'+972'},{n:'Italy',c:'it',d:'+39'},{n:'Jamaica',c:'jm',d:'+1876'},{n:'Japan',c:'jp',d:'+81'},
+  {n:'Jersey',c:'je',d:'+44'},{n:'Jordan',c:'jo',d:'+962'},{n:'Kazakhstan',c:'kz',d:'+7'},{n:'Kenya',c:'ke',d:'+254'},
+  {n:'Kiribati',c:'ki',d:'+686'},{n:'Kosovo',c:'xk',d:'+383'},{n:'Kuwait',c:'kw',d:'+965'},{n:'Kyrgyzstan',c:'kg',d:'+996'},
+  {n:'Laos',c:'la',d:'+856'},{n:'Latvia',c:'lv',d:'+371'},{n:'Lebanon',c:'lb',d:'+961'},{n:'Lesotho',c:'ls',d:'+266'},
+  {n:'Liberia',c:'lr',d:'+231'},{n:'Libya',c:'ly',d:'+218'},{n:'Liechtenstein',c:'li',d:'+423'},{n:'Lithuania',c:'lt',d:'+370'},
+  {n:'Luxembourg',c:'lu',d:'+352'},{n:'Macau',c:'mo',d:'+853'},{n:'Madagascar',c:'mg',d:'+261'},{n:'Malawi',c:'mw',d:'+265'},
+  {n:'Malaysia',c:'my',d:'+60'},{n:'Maldives',c:'mv',d:'+960'},{n:'Mali',c:'ml',d:'+223'},{n:'Malta',c:'mt',d:'+356'},
+  {n:'Marshall Islands',c:'mh',d:'+692'},{n:'Mauritania',c:'mr',d:'+222'},{n:'Mauritius',c:'mu',d:'+230'},{n:'Mexico',c:'mx',d:'+52'},
+  {n:'Micronesia',c:'fm',d:'+691'},{n:'Moldova',c:'md',d:'+373'},{n:'Monaco',c:'mc',d:'+377'},{n:'Mongolia',c:'mn',d:'+976'},
+  {n:'Montenegro',c:'me',d:'+382'},{n:'Morocco',c:'ma',d:'+212'},{n:'Mozambique',c:'mz',d:'+258'},{n:'Myanmar',c:'mm',d:'+95'},
+  {n:'Namibia',c:'na',d:'+264'},{n:'Nauru',c:'nr',d:'+674'},{n:'Nepal',c:'np',d:'+977'},{n:'Netherlands',c:'nl',d:'+31'},
+  {n:'New Zealand',c:'nz',d:'+64'},{n:'Nicaragua',c:'ni',d:'+505'},{n:'Niger',c:'ne',d:'+227'},{n:'Nigeria',c:'ng',d:'+234'},
+  {n:'North Korea',c:'kp',d:'+850'},{n:'North Macedonia',c:'mk',d:'+389'},{n:'Norway',c:'no',d:'+47'},{n:'Oman',c:'om',d:'+968'},
+  {n:'Pakistan',c:'pk',d:'+92'},{n:'Palau',c:'pw',d:'+680'},{n:'Palestine',c:'ps',d:'+970'},{n:'Panama',c:'pa',d:'+507'},
+  {n:'Papua New Guinea',c:'pg',d:'+675'},{n:'Paraguay',c:'py',d:'+595'},{n:'Peru',c:'pe',d:'+51'},{n:'Philippines',c:'ph',d:'+63'},
+  {n:'Poland',c:'pl',d:'+48'},{n:'Portugal',c:'pt',d:'+351'},{n:'Puerto Rico',c:'pr',d:'+1787'},{n:'Qatar',c:'qa',d:'+974'},
+  {n:'Romania',c:'ro',d:'+40'},{n:'Russia',c:'ru',d:'+7'},{n:'Rwanda',c:'rw',d:'+250'},{n:'Samoa',c:'ws',d:'+685'},
+  {n:'San Marino',c:'sm',d:'+378'},{n:'Saudi Arabia',c:'sa',d:'+966'},{n:'Senegal',c:'sn',d:'+221'},{n:'Serbia',c:'rs',d:'+381'},
+  {n:'Seychelles',c:'sc',d:'+248'},{n:'Sierra Leone',c:'sl',d:'+232'},{n:'Singapore',c:'sg',d:'+65'},{n:'Slovakia',c:'sk',d:'+421'},
+  {n:'Slovenia',c:'si',d:'+386'},{n:'Solomon Islands',c:'sb',d:'+677'},{n:'Somalia',c:'so',d:'+252'},{n:'South Africa',c:'za',d:'+27'},
+  {n:'South Korea',c:'kr',d:'+82'},{n:'South Sudan',c:'ss',d:'+211'},{n:'Spain',c:'es',d:'+34'},{n:'Sri Lanka',c:'lk',d:'+94'},
+  {n:'Sudan',c:'sd',d:'+249'},{n:'Suriname',c:'sr',d:'+597'},{n:'Sweden',c:'se',d:'+46'},{n:'Switzerland',c:'ch',d:'+41'},
+  {n:'Syria',c:'sy',d:'+963'},{n:'Taiwan',c:'tw',d:'+886'},{n:'Tajikistan',c:'tj',d:'+992'},{n:'Tanzania',c:'tz',d:'+255'},
+  {n:'Thailand',c:'th',d:'+66'},{n:'Timor-Leste',c:'tl',d:'+670'},{n:'Togo',c:'tg',d:'+228'},{n:'Tonga',c:'to',d:'+676'},
+  {n:'Trinidad and Tobago',c:'tt',d:'+1868'},{n:'Tunisia',c:'tn',d:'+216'},{n:'Turkey',c:'tr',d:'+90'},{n:'Turkmenistan',c:'tm',d:'+993'},
+  {n:'Uganda',c:'ug',d:'+256'},{n:'Ukraine',c:'ua',d:'+380'},{n:'United Arab Emirates',c:'ae',d:'+971'},{n:'United Kingdom',c:'gb',d:'+44'},
+  {n:'United States',c:'us',d:'+1'},{n:'Uruguay',c:'uy',d:'+598'},{n:'Uzbekistan',c:'uz',d:'+998'},{n:'Vanuatu',c:'vu',d:'+678'},
+  {n:'Vatican City',c:'va',d:'+379'},{n:'Venezuela',c:'ve',d:'+58'},{n:'Vietnam',c:'vn',d:'+84'},{n:'Yemen',c:'ye',d:'+967'},
+  {n:'Zambia',c:'zm',d:'+260'},{n:'Zimbabwe',c:'zw',d:'+263'}
+];
+const C_BY_ISO={}; COUNTRIES.forEach(c=>C_BY_ISO[c.c]=c);
+let currentCC = C_BY_ISO['uz'];
 
 function defaults(){
   let name = 'Abdulaziz Xoldaqulov';
@@ -848,18 +955,25 @@ function renderAddPanel(){
 const ARROW_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>';
 const PASTE_SVG='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>';
 const form={key:null, editingId:null};
+function isTel(){ const it=CAT[form.key]; return it && it.kind==='tel'; }
+function rawVal(){ return (isTel()? document.getElementById('phoneInput').value : document.getElementById('formInput').value).trim(); }
 function openAddForm(key, editingId){
   form.key=key; form.editingId=editingId||null;
   const it=CAT[key]; if(!it) return;
-  document.getElementById('formTitle').textContent=(form.editingId?'Edit ':'Add ')+it.label;
-  document.getElementById('formLabel').textContent=it.label;
+  const tel = it.kind==='tel', divider = it.kind==='divider';
+  document.getElementById('formTitle').textContent=(form.editingId?'Edit ':'Add ')+(tel?'Phone Number':it.label);
+  document.getElementById('formLabel').textContent = tel?'Call':it.label;
   document.getElementById('formIcon').innerHTML=innerGlyph(key,false);
-  const inp=document.getElementById('formInput'), btn=document.getElementById('pasteTestBtn');
-  if(it.kind==='divider'){ inp.style.display='none'; btn.style.display='none'; }
-  else { inp.style.display=''; btn.style.display=''; inp.placeholder=it.ph||''; }
+  const inp=document.getElementById('formInput'), btn=document.getElementById('pasteTestBtn'), pbox=document.getElementById('phoneBox');
+  inp.style.display  = (tel||divider) ? 'none' : '';
+  pbox.style.display = tel ? 'flex' : 'none';
+  btn.style.display  = divider ? 'none' : '';
+  if(!tel && !divider) inp.placeholder=it.ph||'';
   let v='', t='';
-  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c){ v=c.value||''; t=c.title||''; } }
-  inp.value=v;
+  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c){ v=c.value||''; t=c.title||'';
+    if(tel){ setCC(c.cc||'uz'); document.getElementById('phoneInput').value=c.national||''; } } }
+  if(tel && !form.editingId){ setCC('uz'); document.getElementById('phoneInput').value=''; }
+  inp.value = tel ? '' : v;
   document.getElementById('formTitleInput').value=t;
   document.getElementById('titleWrap').style.display = t?'block':'none';
   document.getElementById('addTitleBtn').style.display = t?'none':'';
@@ -867,14 +981,39 @@ function openAddForm(key, editingId){
   document.getElementById('submitBtn').textContent = form.editingId?'Save':'Add';
   onFormInput();
   show('addForm');
-  if(it.kind!=='divider') setTimeout(()=>inp.focus(),60);
+  if(!divider) setTimeout(()=>{ (tel?document.getElementById('phoneInput'):inp).focus(); },60);
 }
+
+/* country picker */
+function setCC(iso){ currentCC = C_BY_ISO[iso]||C_BY_ISO['uz']; paintCC(); }
+function paintCC(){ document.getElementById('ccFlag').src='https://flagcdn.com/24x18/'+currentCC.c+'.png'; document.getElementById('ccCode').textContent=currentCC.d; }
+function openCountry(){ document.getElementById('countrySearch').value=''; renderCountry(); show('countryPanel'); }
+function closeCountry(){ hide('countryPanel'); }
+function countryRow(ct){
+  return `<button class="crow${ct.c===currentCC.c?' sel':''}" onclick="pickCountry('${ct.c}')">
+    <img class="flag" src="https://flagcdn.com/24x18/${ct.c}.png" alt="" loading="lazy" onerror="this.style.visibility='hidden'"/>
+    <span class="cn">${esc(ct.n)}</span><span class="cd">${ct.d}</span></button>`;
+}
+function renderCountry(){
+  const q=(document.getElementById('countrySearch').value||'').trim().toLowerCase();
+  let html='';
+  if(!q){
+    html += PINNED.map(iso=>countryRow(C_BY_ISO[iso])).join('') + `<div class="cdiv"></div>`;
+    html += COUNTRIES.map(countryRow).join('');
+  } else {
+    const qd=q.replace(/[^\d]/g,'');
+    const m=COUNTRIES.filter(c=> c.n.toLowerCase().includes(q) || (qd && c.d.replace('+','').startsWith(qd)));
+    html = m.length ? m.map(countryRow).join('') : `<div class="no-res">No countries found</div>`;
+  }
+  document.getElementById('countryBody').innerHTML=html;
+}
+function pickCountry(iso){ setCC(iso); closeCountry(); onFormInput(); }
 function backToPanel(){ hide('addForm'); }
 function closeAll(){ hide('addForm'); hide('addPanel'); }
 function editContent(id){ const c=P.content.find(x=>x.id===id); if(c) openAddForm(c.type, id); }
 function toggleTitle(){ document.getElementById('titleWrap').style.display='block'; document.getElementById('addTitleBtn').style.display='none'; document.getElementById('formTitleInput').focus(); }
 function onFormInput(){
-  const it=CAT[form.key]; const v=document.getElementById('formInput').value.trim();
+  const it=CAT[form.key]; const v=rawVal();
   const btn=document.getElementById('pasteTestBtn');
   if(it.kind==='divider'){ document.getElementById('submitBtn').disabled=false; return; }
   if(v){ btn.className='testbtn'; document.getElementById('ptLabel').textContent='Test'; document.getElementById('ptIcon').innerHTML=ARROW_SVG; }
@@ -884,7 +1023,7 @@ function onFormInput(){
 function validValue(key,v){
   const it=CAT[key]||{}; if(it.kind==='divider') return true; if(!v) return false;
   if(it.kind==='email') return /\S+@\S+\.\S+/.test(v);
-  if(it.kind==='tel'||it.kind==='wa') return v.replace(/[^\d]/g,'').length>=5;
+  if(it.kind==='tel'||it.kind==='wa') return v.replace(/[^\d]/g,'').length>=4;
   return true;
 }
 function resolve(key,v){
@@ -901,22 +1040,29 @@ function resolve(key,v){
   }
 }
 function pasteOrTest(){
-  const inp=document.getElementById('formInput'), v=inp.value.trim();
+  const v=rawVal();
   if(v){
-    const href=resolve(form.key,v);
+    const href = isTel() ? 'tel:'+(currentCC.d+v).replace(/[^\d+]/g,'') : resolve(form.key,v);
     if(href){ if(href.startsWith('mailto:')||href.startsWith('tel:')) location.href=href; else window.open(href,'_blank','noopener'); }
     else toast('Nothing to open for this value');
   } else {
     if(navigator.clipboard && navigator.clipboard.readText){
-      navigator.clipboard.readText().then(t=>{ inp.value=(t||'').trim(); onFormInput(); }).catch(()=>toast('Clipboard not available'));
+      navigator.clipboard.readText().then(t=>{ const val=(t||'').trim();
+        if(isTel()) document.getElementById('phoneInput').value=val; else document.getElementById('formInput').value=val;
+        onFormInput();
+      }).catch(()=>toast('Clipboard not available'));
     } else toast('Clipboard not available');
   }
 }
 function submitAdd(){
-  const it=CAT[form.key]; const v=document.getElementById('formInput').value.trim(); const t=document.getElementById('formTitleInput').value.trim();
-  if(it.kind!=='divider' && !validValue(form.key,v)) return;
-  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c){ c.value=v; c.title=t; } toast('Saved'); }
-  else { P.content.push({id:'c'+Date.now(), type:form.key, value:v, title:t}); toast('Added'); }
+  const it=CAT[form.key]; const t=document.getElementById('formTitleInput').value.trim();
+  if(it.kind!=='divider' && !validValue(form.key, rawVal())) return;
+  let item;
+  if(isTel()){ const nat=rawVal(); item={type:form.key, value:currentCC.d+' '+nat, title:t, cc:currentCC.c, national:nat}; }
+  else if(it.kind==='divider'){ item={type:form.key, value:'', title:t}; }
+  else { item={type:form.key, value:rawVal(), title:t}; }
+  if(form.editingId){ const c=P.content.find(x=>x.id===form.editingId); if(c) Object.assign(c, item); toast('Saved'); }
+  else { item.id='c'+Date.now(); P.content.push(item); toast('Added'); }
   save(); renderContent(); closeAll();
 }
 function deleteCurrent(){ if(form.editingId){ P.content=P.content.filter(x=>x.id!==form.editingId); save(); renderContent(); } closeAll(); toast('Removed'); }
