@@ -381,9 +381,6 @@ body{
         <label class="m-label" for="m-link">Open link (where “View” goes)</label>
         <input id="m-link" class="m-input" placeholder="https://…  or  index.html" autocomplete="off" />
 
-        <label class="m-label">Header color</label>
-        <div class="swatches" id="m-swatches"></div>
-
         <div class="m-error" id="m-error">Please enter a site name</div>
 
         <div class="modal-actions">
@@ -552,7 +549,6 @@ function openModal(id){
     name.value = ''; dom.value = ''; link.value = '';
     selectedGrad = GRADS[Math.floor(Math.random()*GRADS.length)];
   }
-  renderSwatches();
   updatePreview();
   checkSubdomain();   // set initial Save-button / error state
   hideErr();
@@ -560,13 +556,7 @@ function openModal(id){
   setTimeout(()=> name.focus(), 60);
 }
 function closeModal(){ document.getElementById('modal').classList.remove('show'); }
-
-function renderSwatches(){
-  document.getElementById('m-swatches').innerHTML = GRADS.map(g =>
-    `<button type="button" class="swatch${g===selectedGrad ? ' sel':''}" style="background:${g}" onclick="pickGrad('${g}')" aria-label="colour"></button>`
-  ).join('');
-}
-function pickGrad(g){ selectedGrad = g; renderSwatches(); }
+/* a header gradient is still assigned automatically (random for new sites) */
 
 function showErr(msg){ const e = document.getElementById('m-error'); e.textContent = msg; e.classList.add('show'); }
 function hideErr(){ document.getElementById('m-error').classList.remove('show'); }
