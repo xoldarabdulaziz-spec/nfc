@@ -145,15 +145,9 @@ body{
 }
 .card:hover{ transform:translateY(-3px); border-color:var(--line-2); box-shadow:var(--shadow); }
 
-/* brand header (replaces the removed preview image) */
-.card-head{ height:120px; position:relative; display:grid; place-items:center; }
-.card-head::after{ content:""; position:absolute; inset:0; background:radial-gradient(120px 80px at 80% 20%, rgba(255,255,255,.18), transparent 70%); }
-.site-ava{
-  width:54px; height:54px; border-radius:16px; display:grid; place-items:center;
-  background:rgba(0,0,0,.28); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,.25);
-  color:#fff; font-weight:800; font-size:20px; z-index:1;
-}
-.site-ava svg{ width:34px; height:34px; }
+/* live mini-preview of the actual profile (scaled iframe) */
+.card-prev{ position:relative; width:100%; overflow:hidden; background:#0d0e11; border-bottom:1px solid var(--line); }
+.card-prev iframe{ position:absolute; top:0; left:0; width:460px; height:452px; border:0; transform-origin:top left; pointer-events:none; background:#0d0e11; }
 
 .card-body{ padding:14px 16px 4px; }
 .card-title{ font-size:16px; font-weight:700; letter-spacing:-.01em; }
@@ -176,10 +170,7 @@ body{
 
 /* ---- list view ---- */
 .sites.list .card{ flex-direction:row; align-items:center; }
-.sites.list .card-head{ width:84px; height:84px; flex:0 0 84px; border-radius:14px; margin:10px; }
-.sites.list .card-head::after{ border-radius:14px; }
-.sites.list .site-ava{ width:42px; height:42px; border-radius:12px; font-size:16px; }
-.sites.list .site-ava svg{ width:26px; height:26px; }
+.sites.list .card-prev{ width:140px; flex:0 0 140px; border-bottom:none; border-right:1px solid var(--line); margin:10px 0 10px 10px; border-radius:12px; }
 .sites.list .card-body{ flex:1; padding:10px 4px; }
 .sites.list .card-actions{ padding:14px 16px; margin:0; }
 
@@ -504,9 +495,7 @@ function render(){
         : `href="#" onclick="toast('Opening site…');return false;"`;
     return `
     <article class="card">
-      <div class="card-head" style="background:${s.grad}">
-        <div class="site-ava">${ava}</div>
-      </div>
+      <div class="card-prev"><iframe src="profile.html?site=${encodeURIComponent(s.id)}&amp;mode=preview&amp;embed=1" scrolling="no" loading="lazy" title="${esc(s.name)} preview"></iframe></div>
       <div class="card-body">
         <div class="card-title">${esc(s.name)}</div>
         <div class="card-domain">${esc(s.domain)}</div>
@@ -525,7 +514,24 @@ function render(){
     </article>`;
   }).join('');
   document.getElementById('siteCount').textContent = `(${sites.length})`;
+  requestAnimationFrame(sizePreviews);
 }
+
+/* scale each profile-preview iframe to fit its card */
+const PREV_W = 460;          // profile design width
+const PREV_H = 452;          // height shown: top section through Save Contact
+function sizePreviews(){
+  document.querySelectorAll('.card-prev').forEach(p=>{
+    const w = p.clientWidth; if(!w) return;
+    const s = w / PREV_W;
+    const f = p.querySelector('iframe');
+    if(f) f.style.transform = 'scale('+s+')';
+    p.style.height = (PREV_H * s) + 'px';
+  });
+}
+let _rT; window.addEventListener('resize', ()=>{ clearTimeout(_rT); _rT=setTimeout(sizePreviews, 120); });
+/* refresh previews when returning to the tab or when profile data changes elsewhere */
+window.addEventListener('focus', ()=>{ document.querySelectorAll('.card-prev iframe').forEach(f=>{ f.contentWindow && f.contentWindow.location.reload(); }); });
 
 /* ================= ADD / EDIT / DELETE ================= */
 function openModal(id){
@@ -624,6 +630,7 @@ function setView(btn){
   const el = document.getElementById('sites');
   el.classList.remove('grid-lg','grid-sm','list');
   el.classList.add(btn.dataset.view);
+  requestAnimationFrame(sizePreviews);
 }
 
 /* ---- profile menu + logout ---- */

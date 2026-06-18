@@ -224,11 +224,12 @@ function resolve(key,v){ const it=CAT[key]||{}; v=(v||'').trim(); if(!v) return 
 }
 
 /* ===== load profile ===== */
-const SITE_ID=(function(){ try{ return localStorage.getItem('dot_edit_site')||'default'; }catch(_){ return 'default'; } })();
+const SITE_ID=(function(){ try{ const p=new URLSearchParams(location.search).get('site'); return p || localStorage.getItem('dot_edit_site') || 'default'; }catch(_){ return 'default'; } })();
 const KEY='dot_profile_'+SITE_ID;
 let P=load();
 function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o&&o.bio){ if(Array.isArray(o.content)) o.content=o.content.filter(c=>!(c.type==='instagram'&&c.value==='instagram.com/'&&!c.title)); return o; } } }catch(_){}
-  return { avatar:'',banner:'',bio:{fullName:'Your Name',headline:'',jobTitle:'',company:'',location:'',education:'',skills:[]}, content:[], iconStyle:'gradient' }; }
+  let nm='Your Name'; try{ const ss=JSON.parse(localStorage.getItem('dot_sites')||'[]'); const s=ss.find(x=>x.id===SITE_ID); if(s&&s.name) nm=s.name; }catch(_){}
+  return { avatar:'',banner:'',bio:{fullName:nm,headline:'',jobTitle:'',company:'',location:'',education:'',skills:[]}, content:[], iconStyle:'gradient' }; }
 
 let MODE = (new URLSearchParams(location.search).get('mode')==='edit') ? 'edit' : 'preview';
 
