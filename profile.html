@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#151a23" />
+<title>Profile · NFC</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<style>
+/* =========================================================================
+   PUBLIC PROFILE  (preview / edit)  — data-driven from dot_profile_<id>
+   • Preview: Save Contact (downloads a .vcf) + open links
+   • Edit:    Edit Profile -> setup.html, click a link to edit it in Setup
+   ========================================================================= */
+:root{
+  --bg:#151a23; --card:#1b212c; --card-2:#222936; --head:#171c26;
+  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.13);
+  --text:#eef2f7; --muted:#8b94a3; --faint:#677183; --radius:16px;
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; }
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Plus Jakarta Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{ display:block; }
+.page{ max-width:460px; margin:0 auto; min-height:100dvh; padding:0 16px 40px; }
+
+/* header */
+.phead{ height:60px; display:flex; align-items:center; justify-content:center; position:relative; }
+.phead .logo{ height:26px; display:flex; align-items:center; }
+.phead .logo img{ height:26px; width:auto; object-fit:contain; }      /* nfc-logo.png (transparent) */
+.phead .logo svg{ height:26px; width:26px; }                          /* fallback */
+.phead .hicon{ position:absolute; width:40px; height:40px; border-radius:50%; display:grid; place-items:center;
+  background:var(--card); border:1px solid var(--line); color:var(--text); cursor:pointer; }
+.phead .hicon.left{ left:0; } .phead .hicon.right{ right:0; }
+.phead .hicon:active{ transform:scale(.93); }
+
+/* profile card */
+.pcard{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+.pbanner{ position:relative; height:172px; background:linear-gradient(160deg,#2b3340,#171c26 80%); }
+.pbanner .bimg{ position:absolute; inset:0; background-size:cover; background-position:center; }
+.pavatar{ position:absolute; left:20px; bottom:-30px; width:92px; height:92px; border-radius:50%;
+  border:4px solid var(--card); background:#9aa3b2 center/cover no-repeat; box-shadow:0 6px 18px rgba(0,0,0,.4);
+  display:grid; place-items:center; overflow:hidden; z-index:2; }
+.pavatar .ph{ width:100%; height:100%; display:grid; place-items:center; color:#eef2f7; background:radial-gradient(circle at 50% 38%, #c4ccd6, #9aa3b2); }
+.pavatar .ph svg{ width:52px; height:52px; opacity:.9; }
+
+/* edit/preview toggle */
+.eptoggle{ position:absolute; right:12px; bottom:10px; z-index:3; display:flex; background:rgba(20,24,32,.7); backdrop-filter:blur(6px); border:1px solid var(--line-2); border-radius:10px; padding:3px; }
+.eptoggle button{ border:none; background:none; color:var(--muted); font-family:inherit; font-size:12.5px; font-weight:700; padding:5px 12px; border-radius:8px; cursor:pointer; }
+.eptoggle button.on{ background:#3a4150; color:#fff; }
+
+.pinfo{ padding:40px 18px 18px; }
+.pname{ font-size:22px; font-weight:800; letter-spacing:-.01em; }
+.pbio{ color:var(--muted); font-size:14px; margin-top:4px; }
+.ptags{ display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
+.ptag{ font-size:12.5px; font-weight:600; color:#cfd6e0; background:#39414f; border-radius:999px; padding:6px 13px; }
+
+/* actions */
+.pactions{ display:flex; gap:10px; margin-top:16px; }
+.pbtn{ flex:1; height:54px; border:none; border-radius:14px; cursor:pointer; background:#3d4350; color:#fff;
+  font-family:inherit; font-size:15.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:9px; }
+.pbtn:hover{ background:#474e5c; } .pbtn:active{ transform:translateY(1px); }
+.pbtn-ico{ width:54px; flex:0 0 54px; height:54px; border-radius:14px; border:none; cursor:pointer; background:#23262e;
+  border:1px solid var(--line-2); color:var(--text); display:grid; place-items:center; }
+.pbtn-ico:active{ transform:scale(.95); }
+
+/* links */
+.plinks{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+.plink{ display:flex; align-items:center; gap:14px; padding:13px 15px; background:var(--card); border:1px solid var(--line);
+  border-radius:var(--radius); text-decoration:none; color:inherit; box-shadow:0 4px 14px rgba(0,0,0,.2); transition:.16s; cursor:pointer; }
+.plink:hover{ background:var(--card-2); border-color:var(--line-2); }
+.plink .lic{ width:46px; height:46px; flex:0 0 46px; border-radius:13px; overflow:hidden; }
+.plink .grow{ flex:1; min-width:0; }
+.plink .lt{ font-size:15.5px; font-weight:700; }
+.plink .ls{ font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.plink .arr{ color:var(--faint); flex:0 0 auto; }
+.pempty{ text-align:center; color:var(--muted); font-size:14px; padding:30px 0; }
+
+.toast{ position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px); background:#fff; color:#11151c;
+  font-weight:700; font-size:13.5px; padding:11px 18px; border-radius:999px; box-shadow:0 12px 30px rgba(0,0,0,.4);
+  opacity:0; pointer-events:none; transition:.26s; z-index:60; }
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="phead">
+      <button class="hicon left"  id="hLeft"  onclick="goDashboard()" aria-label="Sites" style="display:none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      </button>
+      <!-- LOGO: drop nfc-logo.png next to this file (transparent PNG) -->
+      <div class="logo" title="NFC">
+        <img src="nfc-logo.png" alt="NFC" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+        <svg viewBox="0 0 48 48" style="display:none" aria-hidden="true">
+          <path d="M24 6C14.6 6 7 13.2 7 22.2c0 6.4 3.9 12 9.6 14.7" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/>
+          <path d="M24 42c9.4 0 17-7.2 17-16.2 0-6.4-3.9-12-9.6-14.7" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round"/>
+          <path d="M17.5 31V17l13 15V18" fill="none" stroke="#fff" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <button class="hicon right" id="hRight" onclick="shareProfile()" aria-label="Share" style="display:none">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </header>
+
+    <section class="pcard">
+      <div class="pbanner">
+        <div class="bimg" id="bimg"></div>
+        <div class="pavatar" id="pavatar"><div class="ph" id="pavatarPh"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-5 0-9 2.7-9 6v2h18v-2c0-3.3-4-6-9-6z"/></svg></div></div>
+        <div class="eptoggle">
+          <button id="tEdit" onclick="setMode('edit')">edit</button>
+          <button id="tPrev" onclick="setMode('preview')">preview</button>
+        </div>
+      </div>
+      <div class="pinfo">
+        <div class="pname" id="pname"></div>
+        <div class="pbio" id="pbio"></div>
+        <div class="ptags" id="ptags"></div>
+      </div>
+    </section>
+
+    <div class="pactions" id="pactions"></div>
+    <div class="plinks" id="plinks"></div>
+  </div>
+  <div class="toast" id="toast">Done</div>
+
+<script>
+/* ===== shared catalogue (kept in sync with setup.html) ===== */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const GLYPH = {
+  ig:'<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="#fff"/>',
+  tg:'<path d="M21.5 4 2.8 11.2c-.9.4-.9 1.6 0 1.9l4.7 1.5 1.8 5.6c.3.8 1.3 1 1.9.3l2.5-2.6 4.8 3.5c.7.5 1.7.1 1.9-.7L23 5.3c.2-1-.7-1.8-1.5-1.3z" fill="#fff"/>',
+  ph:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 3 5.2 2 2 0 0 1 5 3h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.9 11a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  em:'<rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M4 7l8 6 8-6" fill="none" stroke="#fff" stroke-width="2"/>',
+  web:'<circle cx="12" cy="12" r="9" fill="none" stroke="#fff" stroke-width="2"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z" fill="none" stroke="#fff" stroke-width="2"/>',
+  tk:'<path d="M14 3c.3 2.3 1.8 4 4 4.3V10c-1.5 0-2.9-.5-4-1.3V15a5 5 0 1 1-5-5v2.7a2.3 2.3 0 1 0 2.3 2.3V3H14z" fill="#fff"/>',
+  yt:'<rect x="3" y="6" width="18" height="12" rx="3" fill="#fff"/><path d="M11 9.5v5l4-2.5z" fill="#222"/>',
+  li:'<rect x="3" y="3" width="18" height="18" rx="3" fill="#fff"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round"/>',
+  fb:'<path d="M14 8h2V5h-2c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2l1-3h-3V8z" fill="#fff"/>',
+  wa:'<path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.6-1.3A9 9 0 1 0 12 3z" fill="none" stroke="#fff" stroke-width="2"/><path d="M9 9c0 4 2 6 6 6 .5 0 1-1 1-1l-2-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2s-1 .5-1.5.5z" fill="#fff"/>',
+  x:'<path d="M4 4l16 16M20 4L4 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>',
+  sc:'<path d="M12 3c2.4 0 3.8 1.7 3.8 3.9 0 .9.2 2.3-.3 3.2 1 .6 1.9.2 2.2.9.3 1-1.3 1.2-2.1 1.5.6 1.5 2.3 2.5 3.2 2.7.5.1.4.9-.1 1-.9.5-1.3.3-1.7.9-.3.5.1.9-.7 1-.7.1-1.2-.5-2-.3-.9.4-1.3 1.3-2.4 1.3s-1.5-.9-2.4-1.3c-.8-.2-1.3.4-2 .3-.8-.1-.4-.5-.7-1-.4-.6-.8-.4-1.7-.9-.5-.1-.6-.9-.1-1 .9-.2 2.6-1.2 3.2-2.7-.8-.3-2.4-.5-2.1-1.5.3-.7 1.2-.3 2.2-.9-.5-.9-.3-2.3-.3-3.2C8.2 4.7 9.6 3 12 3z" fill="#fff"/>',
+  addr:'<path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="10" r="2.4" fill="#fff"/>',
+  dc:'<path d="M18.5 6.5A15 15 0 0 0 15 5.4l-.2.4a13 13 0 0 1 3 1.5 12 12 0 0 0-9.6 0 13 13 0 0 1 3-1.5L11 5.4A15 15 0 0 0 7.5 6.5C5.5 9.4 5 12.3 5.2 15.2A14 14 0 0 0 8.6 17l.7-1.1a8 8 0 0 1-1.2-.6l.3-.2a9 9 0 0 0 7.2 0l.3.2a8 8 0 0 1-1.2.6l.7 1.1a14 14 0 0 0 3.4-1.8c.3-3.4-.5-6.3-2.3-8.7zM9.8 13.8a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zm4.4 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6z" fill="#fff"/>',
+  gh:'<path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.3-1.1.6-1.4-2.2-.2-4.5-1.1-4.5-4.9a4 4 0 0 1 1-2.7c-.1-.3-.5-1.3.1-2.7 0 0 .9-.3 2.8 1a9 9 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .6 1.4.2 2.4.1 2.7a4 4 0 0 1 1 2.7c0 3.8-2.3 4.7-4.5 4.9.3.3.6.9.6 1.9v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" fill="#fff"/>',
+  pin:'<path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.1-2 0-2.9l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.6 1.3 1.5 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.1-2.3 3.1-5 0-2.1-1.5-3.6-4.1-3.6a4.7 4.7 0 0 0-4.9 4.7c0 .9.3 1.6.8 2 .2.2.2.3.1.5l-.2.9c-.1.3-.3.4-.6.2-1.2-.5-1.7-1.9-1.7-3.1 0-2.6 2.1-5.6 6.5-5.6 3.5 0 5.8 2.5 5.8 5.2 0 3.6-2 6.3-4.9 6.3-1 0-1.9-.5-2.2-1.1l-.6 2.3c-.2.8-.7 1.7-1.1 2.3A10 10 0 1 0 12 2z" fill="#fff"/>',
+  sp:'<circle cx="12" cy="12" r="10" fill="#fff"/><path d="M7 9.5c3-.8 6.5-.5 9 1M7.5 12.5c2.5-.6 5.3-.3 7.3 1M8 15.2c2-.4 4.2-.2 5.8.9" fill="none" stroke="#222" stroke-width="1.6" stroke-linecap="round"/>'
+};
+const BRAND = { instagram:'linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf)', telegram:'#229ED9', telegramchannel:'#229ED9', phone:'#22c55e', email:'#ef4444', website:'#6c5ce7', tiktok:'#111317', youtube:'#ff0000', linkedin:'#0a66c2', facebook:'#1877f2', whatsapp:'#25d366', whatsappchannel:'#25d366', x:'#111317', snapchat:'#0fb', discord:'#5865F2', discordserver:'#5865F2', github:'#181717', pinterest:'#E60023', spotify:'#1DB954', address:'#22c55e', location:'#22c55e' };
+const CATALOG = [
+  {key:'website',label:'Website',g:'web',kind:'url'},{key:'email',label:'Email',g:'em',kind:'email'},
+  {key:'phone',label:'Phone',g:'ph',kind:'tel'},{key:'address',label:'Address',g:'addr',kind:'text'},
+  {key:'location',label:'Location',g:'addr',kind:'url'},{key:'whatsapp',label:'WhatsApp',g:'wa',kind:'wa'},
+  {key:'discord',label:'Discord',g:'dc',kind:'url'},{key:'wechat',label:'WeChat',kind:'text'},
+  {key:'telegram',label:'Telegram',g:'tg',kind:'user',pre:'https://t.me/'},{key:'signal',label:'Signal',kind:'url'},
+  {key:'linkedin',label:'LinkedIn',g:'li',kind:'user',pre:'https://linkedin.com/in/'},{key:'instagram',label:'Instagram',g:'ig',kind:'user',pre:'https://instagram.com/'},
+  {key:'x',label:'X (Twitter)',g:'x',kind:'user',pre:'https://x.com/'},{key:'facebook',label:'Facebook',g:'fb',kind:'user',pre:'https://facebook.com/'},
+  {key:'youtube',label:'YouTube',g:'yt',kind:'user',pre:'https://youtube.com/@'},{key:'tiktok',label:'TikTok',g:'tk',kind:'user',pre:'https://tiktok.com/@'},
+  {key:'pinterest',label:'Pinterest',g:'pin',kind:'user',pre:'https://pinterest.com/'},{key:'vimeo',label:'Vimeo',kind:'user',pre:'https://vimeo.com/'},
+  {key:'snapchat',label:'Snapchat',g:'sc',kind:'user',pre:'https://snapchat.com/add/'},{key:'twitch',label:'Twitch',kind:'user',pre:'https://twitch.tv/'},
+  {key:'threads',label:'Threads',kind:'user',pre:'https://threads.net/@'},{key:'clubhouse',label:'Clubhouse',kind:'user',pre:'https://clubhouse.com/@'},
+  {key:'document',label:'Document',kind:'url'},{key:'textblock',label:'Text Block',kind:'text'},{key:'divider',label:'Divider',kind:'divider'},
+  {key:'calendly',label:'Calendly',kind:'user',pre:'https://calendly.com/'},{key:'notion',label:'Notion',kind:'url'},{key:'gdrive',label:'Google Drive',kind:'url'},
+  {key:'yelp',label:'Yelp',kind:'url'},{key:'googlereviews',label:'Google Reviews',kind:'url'},{key:'etsy',label:'Etsy',kind:'user',pre:'https://etsy.com/shop/'},
+  {key:'booksy',label:'Booksy',kind:'url'},{key:'appstore',label:'App Store',kind:'url'},{key:'googleplay',label:'Google Play',kind:'url'},{key:'zillow',label:'Zillow',kind:'url'},
+  {key:'medium',label:'Medium',kind:'user',pre:'https://medium.com/@'},{key:'behance',label:'Behance',kind:'user',pre:'https://behance.net/'},{key:'dribbble',label:'Dribbble',kind:'user',pre:'https://dribbble.com/'},
+  {key:'github',label:'GitHub',g:'gh',kind:'user',pre:'https://github.com/'},
+  {key:'venmo',label:'Venmo',kind:'user',pre:'https://venmo.com/'},{key:'cashapp',label:'Cash App',kind:'user',pre:'https://cash.app/$'},{key:'zelle',label:'Zelle',kind:'text'},{key:'paypal',label:'PayPal',kind:'user',pre:'https://paypal.me/'},
+  {key:'spotify',label:'Spotify',g:'sp',kind:'url'},{key:'soundcloud',label:'SoundCloud',kind:'user',pre:'https://soundcloud.com/'},{key:'applemusic',label:'Apple Music',kind:'url'},{key:'itunes',label:'iTunes',kind:'url'},
+  {key:'beatport',label:'Beatport',kind:'url'},{key:'deezer',label:'Deezer',kind:'url'},{key:'tidal',label:'Tidal',kind:'url'},{key:'ytmusic',label:'YouTube Music',kind:'url'},
+  {key:'bandcamp',label:'Bandcamp',kind:'url'},{key:'amazonmusic',label:'Amazon Music',kind:'url'},{key:'applepodcasts',label:'Apple Podcasts',kind:'url'},
+  {key:'patreon',label:'Patreon',kind:'user',pre:'https://patreon.com/'},{key:'substack',label:'Substack',kind:'url'},{key:'kofi',label:'Ko-fi',kind:'user',pre:'https://ko-fi.com/'},
+  {key:'bmac',label:'Buy Me a Coffee',kind:'user',pre:'https://buymeacoffee.com/'},{key:'onlyfans',label:'OnlyFans',kind:'user',pre:'https://onlyfans.com/'},{key:'reddit',label:'Reddit',kind:'user',pre:'https://reddit.com/user/'},
+  {key:'tumblr',label:'Tumblr',kind:'user',pre:'https://tumblr.com/'},{key:'flickr',label:'Flickr',kind:'user',pre:'https://flickr.com/photos/'},{key:'vsco',label:'VSCO',kind:'user',pre:'https://vsco.co/'},
+  {key:'mixcloud',label:'Mixcloud',kind:'user',pre:'https://mixcloud.com/'},{key:'anchor',label:'Anchor',kind:'url'},{key:'rumble',label:'Rumble',kind:'user',pre:'https://rumble.com/'},{key:'kick',label:'Kick',kind:'user',pre:'https://kick.com/'},
+  {key:'steam',label:'Steam',kind:'user',pre:'https://steamcommunity.com/id/'},{key:'discordserver',label:'Discord Server',g:'dc',kind:'url'},{key:'telegramchannel',label:'Telegram Channel',g:'tg',kind:'user',pre:'https://t.me/'},
+  {key:'whatsappchannel',label:'WhatsApp Channel',g:'wa',kind:'url'},{key:'linktree',label:'Linktree',kind:'user',pre:'https://linktr.ee/'},{key:'gumroad',label:'Gumroad',kind:'user',pre:'https://gumroad.com/'},
+  {key:'shopify',label:'Shopify',kind:'url'},{key:'stripe',label:'Stripe',kind:'url'},{key:'binancepay',label:'Binance Pay',kind:'text'},{key:'coinbase',label:'Coinbase',kind:'url'},
+  {key:'messenger',label:'Messenger',kind:'user',pre:'https://m.me/'},{key:'skype',label:'Skype',kind:'text'},{key:'zoom',label:'Zoom',kind:'url'},{key:'teams',label:'Microsoft Teams',kind:'url'},{key:'googlemeet',label:'Google Meet',kind:'url'}
+];
+const CAT={}; CATALOG.forEach(it=>CAT[it.key]=it);
+function innerGlyph(key,dark){ const it=CAT[key]||{};
+  if(it.g&&GLYPH[it.g]){ let g=`<svg width="22" height="22" viewBox="0 0 24 24">${GLYPH[it.g]}</svg>`; if(dark) g=g.replace(/#fff/g,'#15181f').replace(/stroke="#fff"/g,'stroke="#15181f"'); return g; }
+  const l=((it.label||'?').trim()[0]||'?').toUpperCase(); return `<span style="font-weight:700;font-size:17px;color:${dark?'#15181f':'#fff'}">${esc(l)}</span>`;
+}
+function iconCircle(key,style){ let bg=BRAND[key]||'#39414f',dark=false;
+  if(style==='light'){bg='#e9edf3';dark=true;} else if(style==='white'){bg='#fff';dark=true;} else if(style==='black'){bg='#15181f';}
+  return `<span style="width:100%;height:100%;display:grid;place-items:center;background:${bg}">${innerGlyph(key,dark)}</span>`;
+}
+function resolve(key,v){ const it=CAT[key]||{}; v=(v||'').trim(); if(!v) return '';
+  if(key==='address') return 'https://maps.google.com/?q='+encodeURIComponent(v);
+  switch(it.kind){
+    case 'email': return 'mailto:'+v;
+    case 'tel':   return 'tel:'+v.replace(/[^\d+]/g,'');
+    case 'wa':    return 'https://wa.me/'+v.replace(/[^\d]/g,'');
+    case 'text':  return /^https?:\/\//i.test(v)?v:'';
+    case 'user':  return /^https?:\/\//i.test(v)?v:(it.pre||'')+v.replace(/^@/,'');
+    case 'url': default: return /^https?:\/\//i.test(v)?v:'https://'+v;
+  }
+}
+
+/* ===== load profile ===== */
+const SITE_ID=(function(){ try{ return localStorage.getItem('dot_edit_site')||'default'; }catch(_){ return 'default'; } })();
+const KEY='dot_profile_'+SITE_ID;
+let P=load();
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o&&o.bio) return o; } }catch(_){}
+  return { avatar:'',banner:'',bio:{fullName:'Your Name',headline:'',jobTitle:'',company:'',location:'',education:'',skills:[]}, content:[], iconStyle:'gradient' }; }
+
+let MODE = (new URLSearchParams(location.search).get('mode')==='edit') ? 'edit' : 'preview';
+
+function renderProfile(){
+  // avatar + banner
+  const av=document.getElementById('pavatar'), avph=document.getElementById('pavatarPh');
+  if(P.avatar){ av.style.backgroundImage=`url(${P.avatar})`; avph.style.display='none'; } else { av.style.backgroundImage=''; avph.style.display='grid'; }
+  document.getElementById('bimg').style.backgroundImage = P.banner?`url(${P.banner})`:'';
+  // name / bio / tags
+  document.getElementById('pname').textContent = P.bio.fullName||'Your Name';
+  const parts=[P.bio.headline,P.bio.jobTitle].filter(Boolean);
+  document.getElementById('pbio').textContent = parts.length ? '| '+parts.join('  |  ') : (P.bio.company||'');
+  document.getElementById('ptags').innerHTML = (P.bio.skills||[]).map(s=>`<span class="ptag">${esc(s)}</span>`).join('');
+}
+function renderHeader(){
+  document.getElementById('hLeft').style.display  = MODE==='edit' ? 'grid' : 'none';
+  document.getElementById('hRight').style.display = MODE==='edit' ? 'grid' : 'none';
+  document.getElementById('tEdit').classList.toggle('on', MODE==='edit');
+  document.getElementById('tPrev').classList.toggle('on', MODE==='preview');
+}
+function renderActions(){
+  const el=document.getElementById('pactions');
+  if(MODE==='edit'){
+    el.innerHTML = `<button class="pbtn" onclick="goSetup()">Edit Profile</button>
+      <button class="pbtn-ico" onclick="goSetup()" aria-label="Style"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 5.5 6 10a6 6 0 0 1-12 0c0-4.5 6-10 6-10z"/></svg></button>`;
+  } else {
+    el.innerHTML = `<button class="pbtn" onclick="saveVCard()">Save Contact</button>
+      <button class="pbtn-ico" onclick="saveVCard()" aria-label="Download"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>`;
+  }
+}
+function renderLinks(){
+  const el=document.getElementById('plinks');
+  const items=(P.content||[]).filter(c=>c.type!=='divider');
+  if(!items.length){ el.innerHTML=`<div class="pempty">No links yet${MODE==='edit'?' — tap Edit Profile to add some.':''}</div>`; return; }
+  el.innerHTML = items.map(c=>{
+    const it=CAT[c.type]||{label:c.type};
+    const sub = c.value||'';
+    const right = MODE==='edit'
+      ? `<svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>`
+      : `<svg class="arr" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+    const onclick = MODE==='edit' ? `editItem('${c.id}')` : `openLink('${c.type}', ${JSON.stringify(c.value||'').replace(/"/g,'&quot;')})`;
+    return `<div class="plink" onclick="${onclick}">
+      <span class="lic">${iconCircle(c.type, P.iconStyle)}</span>
+      <span class="grow"><div class="lt">${esc(c.title||it.label)}</div><div class="ls">${esc(sub)}</div></span>
+      ${right}</div>`;
+  }).join('');
+}
+function renderAll(){ renderProfile(); renderHeader(); renderActions(); renderLinks(); }
+
+function setMode(m){ MODE=m; const u=new URL(location); u.searchParams.set('mode',m); history.replaceState(null,'',u); renderAll(); }
+function openLink(type,value){ const href=resolve(type,value); if(!href){ toast('Nothing to open'); return; }
+  if(href.startsWith('mailto:')||href.startsWith('tel:')) location.href=href; else window.open(href,'_blank','noopener'); }
+function goSetup(){ try{ localStorage.removeItem('dot_edit_item'); }catch(_){} location.href='setup.html'; }
+function editItem(id){ try{ localStorage.setItem('dot_edit_item', id); }catch(_){} location.href='setup.html'; }
+function goDashboard(){ location.href='dashboard.html'; }
+async function shareProfile(){ try{ if(navigator.share){ await navigator.share({title:P.bio.fullName||'Profile', url:location.href}); } else { await navigator.clipboard.writeText(location.href); toast('Link copied'); } }catch(_){} }
+
+/* ===== Save Contact -> .vcf ===== */
+function saveVCard(){
+  const b=P.bio; const full=(b.fullName||'').trim();
+  const np=full.split(/\s+/); const first=np[0]||''; const last=np.slice(1).join(' ');
+  const L=['BEGIN:VCARD','VERSION:3.0',`N:${last};${first};;;`,`FN:${full||'Contact'}`];
+  if(b.company) L.push(`ORG:${b.company}`);
+  if(b.jobTitle||b.headline) L.push(`TITLE:${b.jobTitle||b.headline}`);
+  (P.content||[]).forEach(c=>{
+    const it=CAT[c.type]||{}; const v=(c.value||'').trim(); if(!v) return;
+    if(it.kind==='tel') L.push(`TEL;TYPE=CELL:${v.replace(/[^\d+]/g,'')}`);
+    else if(it.kind==='email') L.push(`EMAIL;TYPE=INTERNET:${v}`);
+    else if(it.kind==='wa') L.push(`TEL;TYPE=whatsapp:${v.replace(/[^\d]/g,'')}`);
+    else if(it.kind==='divider'||it.kind==='text'){ const h=resolve(c.type,v); if(h) L.push(`URL:${h}`); }
+    else { const h=resolve(c.type,v); if(h) L.push(`URL:${h}`); }
+  });
+  if(b.location) L.push(`ADR;TYPE=WORK:;;${b.location};;;;`);
+  if(P.avatar && P.avatar.startsWith('data:image')){ const m=P.avatar.match(/^data:image\/(\w+);base64,(.*)$/); if(m) L.push(`PHOTO;ENCODING=b;TYPE=${m[1].toUpperCase()}:${m[2]}`); }
+  L.push('END:VCARD');
+  const blob=new Blob([L.join('\r\n')],{type:'text/vcard'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a');
+  a.href=url; a.download=((full||'contact').replace(/\s+/g,'_'))+'.vcf';
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast('Contact saved ✓');
+}
+
+let tt; function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),1700); }
+renderAll();
+</script>
+</body>
+</html>

@@ -1103,7 +1103,7 @@ function renderIconStyles(){
 function setIconStyle(st){ P.iconStyle=st; save(); renderIconStyles(); renderContent(); }
 
 /* ============================ Preview ============================ */
-function previewProfile(){ save(); toast('Opening preview…'); setTimeout(()=> location.href='card.html', 500); }
+function previewProfile(){ save(); toast('Opening preview…'); setTimeout(()=> location.href='profile.html', 450); }
 
 /* ============================ modal helpers ============================ */
 function open_(id){ document.getElementById(id).classList.add('show'); }
@@ -1120,6 +1120,8 @@ const b_fullName=document.getElementById('b-fullName'), b_headline=document.getE
 /* ============================ init ============================ */
 function init(){
   paintBanner(); paintAvatar(); renderBio(); renderContent(); renderSwatches(); paintTheme(); renderIconStyles();
+  /* arrived from the profile's edit mode wanting to edit one item? open it. */
+  try{ const eid=localStorage.getItem('dot_edit_item'); if(eid){ localStorage.removeItem('dot_edit_item'); const c=P.content.find(x=>x.id===eid); if(c) setTimeout(()=>openAddForm(c.type, eid), 80); } }catch(_){}
 }
 init();
 </script>

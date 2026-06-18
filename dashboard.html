@@ -520,7 +520,7 @@ function render(){
           ${iconBtn('pin','Pin',`toast('Pinned')`)}
           ${iconBtn('gear','Edit profile',`editProfile('${s.id}')`)}
         </div>
-        <a class="view-btn" ${view}>View</a>
+        <a class="view-btn" href="#" onclick="openProfile('${s.id}');return false;">View</a>
       </div>
     </article>`;
   }).join('');
@@ -598,6 +598,8 @@ function editSite(id){ openModal(id); }
 
 /* open the full profile editor (Setup) for a site */
 function editProfile(id){ try{ localStorage.setItem('dot_edit_site', id); }catch(_){} location.href = 'setup.html'; }
+/* open a site's public profile (preview) */
+function openProfile(id){ try{ localStorage.setItem('dot_edit_site', id); }catch(_){} location.href = 'profile.html'; }
 
 function duplicateSite(id){
   const i = sites.findIndex(x => x.id === id);
