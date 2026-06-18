@@ -495,7 +495,7 @@ function render(){
         : `href="#" onclick="toast('Opening site…');return false;"`;
     return `
     <article class="card">
-      <div class="card-prev"><iframe src="profile.html?site=${encodeURIComponent(s.id)}&amp;mode=preview&amp;embed=1" scrolling="no" loading="lazy" title="${esc(s.name)} preview"></iframe></div>
+      <div class="card-prev"><iframe src="profile.html?site=${encodeURIComponent(s.id)}&amp;mode=preview&amp;embed=1" scrolling="no" loading="lazy" onload="fitPreview(this)" title="${esc(s.name)} preview"></iframe></div>
       <div class="card-body">
         <div class="card-title">${esc(s.name)}</div>
         <div class="card-domain">${esc(s.domain)}</div>
@@ -517,18 +517,27 @@ function render(){
   requestAnimationFrame(sizePreviews);
 }
 
-/* scale each profile-preview iframe to fit its card */
+/* scale each profile-preview iframe to fit its card, clipped just below the
+   profile card (after the tags) so the Save Contact button is NOT shown.
+   The clip height comes from profile.html via postMessage (data-cut). */
 const PREV_W = 460;          // profile design width
-const PREV_H = 452;          // height shown: top section through Save Contact
-function sizePreviews(){
-  document.querySelectorAll('.card-prev').forEach(p=>{
-    const w = p.clientWidth; if(!w) return;
-    const s = w / PREV_W;
-    const f = p.querySelector('iframe');
-    if(f) f.style.transform = 'scale('+s+')';
-    p.style.height = (PREV_H * s) + 'px';
-  });
+const PREV_H = 384;          // fallback clip height until the iframe reports
+function fitPreview(f){
+  const p = f && f.closest('.card-prev'); if(!p) return;
+  const w = p.clientWidth; if(!w) return;
+  const s = w / PREV_W;
+  const cut = parseFloat(f.dataset.cut) || PREV_H;
+  f.style.transform = 'scale('+s+')';
+  f.style.height = (cut + 30) + 'px';   // render a bit beyond the cut; overflow clips it
+  p.style.height = (cut * s) + 'px';
 }
+function sizePreviews(){ document.querySelectorAll('.card-prev iframe').forEach(fitPreview); }
+/* each preview reports its card height -> clip before Save Contact */
+window.addEventListener('message', e=>{
+  const d=e.data; if(!d || typeof d.__nfcPrevH!=='number') return;
+  const f=[...document.querySelectorAll('.card-prev iframe')].find(x=>x.contentWindow===e.source);
+  if(f){ f.dataset.cut=d.__nfcPrevH; fitPreview(f); }
+});
 let _rT; window.addEventListener('resize', ()=>{ clearTimeout(_rT); _rT=setTimeout(sizePreviews, 120); });
 /* refresh previews when returning to the tab or when profile data changes elsewhere */
 window.addEventListener('focus', ()=>{ document.querySelectorAll('.card-prev iframe').forEach(f=>{ f.contentWindow && f.contentWindow.location.reload(); }); });

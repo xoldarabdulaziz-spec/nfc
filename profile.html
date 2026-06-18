@@ -278,7 +278,18 @@ function renderLinks(){
   }).join('');
 }
 function applyTheme(t){ const c=document.documentElement.classList; c.remove('t-bright','t-dim','t-dark'); c.add('t-'+(t||'dim')); }
-function renderAll(){ applyTheme(P.theme); renderProfile(); renderHeader(); renderActions(); renderLinks(); }
+function renderAll(){ applyTheme(P.theme); renderProfile(); renderHeader(); renderActions(); renderLinks(); reportHeight(); }
+/* when embedded as a dashboard mini-preview, tell the parent where the
+   profile card ends (so it can clip just before the Save Contact button) */
+function reportHeight(){
+  try{ if(window.parent && window.parent!==window){
+    const el=document.querySelector('.pcard');
+    const h = el ? Math.ceil(el.getBoundingClientRect().bottom)+6 : 384;
+    window.parent.postMessage({__nfcPrevH:h}, '*');
+  } }catch(_){}
+}
+window.addEventListener('load', reportHeight);
+setTimeout(reportHeight, 400);   // re-report after fonts settle
 
 function setMode(m){ MODE=m; const u=new URL(location); u.searchParams.set('mode',m); history.replaceState(null,'',u); renderAll(); }
 function openLink(type,value){ const href=resolve(type,value); if(!href){ toast('Nothing to open'); return; }
