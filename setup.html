@@ -315,6 +315,39 @@ img,svg{ display:block; }
 .toast{ position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(16px); background:#fff; color:#11151c;
   font-weight:700; font-size:13.5px; padding:11px 18px; border-radius:999px; box-shadow:0 12px 30px rgba(0,0,0,.4);
   opacity:0; pointer-events:none; transition:.26s; z-index:90; }
+/* =====================  THEMES (colours only)  =====================
+   Dim = default navy (the base :root values). Bright = light, Dark = black.
+   Applied by toggling html.t-bright / html.t-dim / html.t-dark. */
+html.t-bright{
+  --bg:#f4f5f7; --card:#ffffff; --card-2:#eceef2; --head:#ffffff;
+  --line:rgba(0,0,0,.09); --line-2:rgba(0,0,0,.15);
+  --text:#16181d; --muted:#6b7280; --faint:#9aa1ad; --label:#7a8290;
+}
+html.t-dark{
+  --bg:#000000; --card:#0d0e11; --card-2:#16181c; --head:#070708;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.16);
+  --text:#f3f5f8; --muted:#9098a6; --faint:#6b7280; --label:#7d8799;
+}
+/* Bright: flip the dark control surfaces to light */
+html.t-bright .topbar .back,
+html.t-bright .fs-head .back,
+html.t-bright .pillbtn,
+html.t-bright .upload,
+html.t-bright .upgrade,
+html.t-bright .cc{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#16181d; }
+html.t-bright .chip{ background:#e9ebef; color:#3b4150; }
+html.t-bright .badge,
+html.t-bright .modal-x,
+html.t-bright .rx,
+html.t-bright .info,
+html.t-bright .pastebtn,
+html.t-bright .addtitle,
+html.t-bright .imgupload,
+html.t-bright .imgbtn.edit,
+html.t-bright .fs-search .box{ background:#e9ebef; color:#16181d; border-color:rgba(0,0,0,.1); }
+html.t-bright .imgbtn.remove{ background:#f6e2e3; color:#c1372e; }
+html.t-bright .swatch.sel,
+html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -1090,7 +1123,8 @@ function renderSwatches(){
 }
 function setColor(k){ P.color=k; save(); renderSwatches(); }
 function paintTheme(){ document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('sel', b.dataset.theme===P.theme)); }
-function setTheme(b){ P.theme=b.dataset.theme; save(); paintTheme(); }
+function applyTheme(t){ const c=document.documentElement.classList; c.remove('t-bright','t-dim','t-dark'); c.add('t-'+(t||'dim')); }
+function setTheme(b){ P.theme=b.dataset.theme; save(); paintTheme(); applyTheme(P.theme); }
 function renderIconStyles(){
   const wrap=document.getElementById('iconStyles');
   let html = ICON_STYLES.map(st=>
@@ -1119,6 +1153,7 @@ const b_fullName=document.getElementById('b-fullName'), b_headline=document.getE
 
 /* ============================ init ============================ */
 function init(){
+  applyTheme(P.theme);
   paintBanner(); paintAvatar(); renderBio(); renderContent(); renderSwatches(); paintTheme(); renderIconStyles();
   /* arrived from the profile's edit mode wanting to edit one item? open it. */
   try{ const eid=localStorage.getItem('dot_edit_item'); if(eid){ localStorage.removeItem('dot_edit_item'); const c=P.content.find(x=>x.id===eid); if(c) setTimeout(()=>openAddForm(c.type, eid), 80); } }catch(_){}
