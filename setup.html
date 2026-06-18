@@ -727,13 +727,13 @@ function defaults(){
     avatar:'', banner:'',
     bio:{ fullName:name, headline:'', jobTitle:'', company:'NFC', location:'', education:'', skills:['Business','nfc card'] },
     direct:false,
-    content:[ {id:'c'+Date.now(), type:'instagram', value:'instagram.com/'} ],
+    content:[],
     contact:{ first:'', last:'', phone:'', email:'', company:'NFC', website:'' },
     color:'black', theme:'dim', iconStyle:'gradient'
   };
 }
 let P = load();
-function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o && o.bio) return o; } }catch(_){} return defaults(); }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o && o.bio){ if(Array.isArray(o.content)) o.content=o.content.filter(c=>!(c.type==='instagram'&&c.value==='instagram.com/'&&!c.title)); return o; } } }catch(_){} return defaults(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(P)); }catch(_){} }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
