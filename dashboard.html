@@ -261,6 +261,12 @@ body{
   .view-toggle{ display:none; }
 }
 </style>
+<!-- Firebase: real owner-only security (stays local-only until firebase-config.js is filled in) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
 </head>
 
 <body>
@@ -454,7 +460,8 @@ const GRADS = [
 ];
 
 /* ---- auth guard: no access to the dashboard without a successful login ---- */
-if (localStorage.getItem('dot_logged_in') !== '1') location.replace('login.html');
+if (window.FB_ON) { window.fbReady(function(u){ if(!u){ location.replace('login.html'); } else { fbSyncSites(); } }); }
+else if (localStorage.getItem('dot_logged_in') !== '1') location.replace('login.html');
 
 /* ---- state (persisted in localStorage) ---- */
 let sites = loadSites();
@@ -465,7 +472,27 @@ function loadSites(){
   try{ const raw = localStorage.getItem(STORE_KEY); if(raw) return JSON.parse(raw); }catch(_){}
   return DEFAULT_SITES.slice();
 }
-function persist(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){ } }
+function persist(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){ }
+  /* mirror the site list to Firestore (each doc protected by owner rules) */
+  if(window.FB_ON && window.FB_USER){ sites.forEach(function(s){ try{ window.fbSaveSite(s.id, mergeProfile(s)); }catch(_){} }); }
+}
+/* keep any already-saved profile fields when writing the site meta */
+function mergeProfile(s){
+  let prof={}; try{ const r=localStorage.getItem('dot_profile_'+s.id); if(r) prof=JSON.parse(r); }catch(_){}
+  return Object.assign({}, prof, { name:s.name, domain:s.domain, grad:s.grad, link:s.link });
+}
+/* pull the owner's sites from Firestore on load */
+function fbSyncSites(){
+  if(!window.FB_ON) return;
+  window.fbListSites().then(function(arr){
+    if(arr && arr.length){
+      sites = arr.map(function(d){ return { id:d.id, name:d.name||'(untitled)', domain:d.domain||'', grad:d.grad||GRADS[0], link:d.link||'#', logo:d.logo }; });
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){}
+      render();
+    }
+  }).catch(function(){});
+}
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ---- icons ---- */
@@ -629,6 +656,7 @@ function deleteSite(id){
   if(!s) return;
   if(!confirm('Delete "'+s.name+'"? This cannot be undone.')) return;
   sites = sites.filter(x => x.id !== id);
+  if(window.FB_ON && window.FB_USER){ try{ window.fbDeleteSite(id).catch(function(){}); }catch(_){} }
   persist(); render(); toast('Site deleted');
 }
 
@@ -647,6 +675,7 @@ function toggleMenu(e){ e.stopPropagation(); document.getElementById('popover').
 document.addEventListener('click', ()=> document.getElementById('popover').classList.remove('show'));
 function logout(){
   try{ localStorage.removeItem('dot_logged_in'); }catch(_){}
+  if(window.FB_ON){ try{ window.fbLogout(); }catch(_){} }
   location.href = 'login.html';
 }
 

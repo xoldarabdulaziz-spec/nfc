@@ -119,6 +119,12 @@ body::before{
 .login-btn:active{ transform:translateY(1px); }
 .login-btn:disabled{ opacity:.6; cursor:default; }
 </style>
+<!-- Firebase: real owner-only security (stays local-only until firebase-config.js is filled in) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
 </head>
 
 <body>
@@ -189,10 +195,20 @@ form.addEventListener('submit', function(e){
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
   const pass  = document.getElementById('password').value;
+  const fail = ()=>{ btn.disabled=false; btn.textContent='Log In'; errEl.classList.add('show');
+    btn.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:240}); };
 
-  // case-insensitive email match, exact password
+  // ---- Firebase auth (real, server-verified) when configured ----
+  if(window.FB_ON){
+    errEl.classList.remove('show'); btn.textContent='Logging in…'; btn.disabled=true;
+    window.fbLogin(email, pass)
+      .then(()=>{ setTimeout(()=>{ window.location.href = HOME; }, 300); })
+      .catch(fail);
+    return;
+  }
+
+  // ---- local fallback (no Firebase configured) ----
   const ok = email.toLowerCase() === AUTH.email.toLowerCase() && pass === AUTH.password;
-
   if(ok){
     errEl.classList.remove('show');
     btn.textContent = "Logging in…";
@@ -200,11 +216,7 @@ form.addEventListener('submit', function(e){
     try{ localStorage.setItem('dot_logged_in','1'); }catch(_){}
     setTimeout(()=>{ window.location.href = HOME; }, 450);
   } else {
-    errEl.classList.add('show');
-    btn.animate(
-      [{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],
-      {duration:240}
-    );
+    fail();
   }
 });
 

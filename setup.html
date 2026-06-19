@@ -350,6 +350,12 @@ html.t-bright .swatch.sel,
 html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
+<!-- Firebase: real owner-only security (stays local-only until firebase-config.js is filled in) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
 </head>
 
 <body>
@@ -557,7 +563,8 @@ html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
 
 <script>
 /* ===== owner-only guard: editing requires the owner to be logged in ===== */
-if (localStorage.getItem('dot_logged_in') !== '1') { location.replace('login.html'); }
+if (window.FB_ON) { window.fbReady(function(u){ if(!u) location.replace('login.html'); }); }
+else if (localStorage.getItem('dot_logged_in') !== '1') { location.replace('login.html'); }
 
 /* ============================ data ============================ */
 /* each site/client gets its own saved profile */
@@ -770,7 +777,16 @@ function defaults(){
 }
 let P = load();
 function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o && o.bio){ if(Array.isArray(o.content)) o.content=o.content.filter(c=>!(c.type==='instagram'&&c.value==='instagram.com/'&&!c.title)); return o; } } }catch(_){} return defaults(); }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(P)); }catch(_){} }
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(P)); }catch(_){}
+  /* publish to Firestore (server-protected; only the owner can write) */
+  if(window.FB_ON && window.FB_USER){
+    try{
+      let meta={}; try{ const ss=JSON.parse(localStorage.getItem('dot_sites')||'[]'); const s=ss.find(x=>x.id===SITE_ID); if(s) meta={name:s.name,domain:s.domain,grad:s.grad,link:s.link}; }catch(_){}
+      window.fbSaveSite(SITE_ID, Object.assign({}, meta, P)).catch(function(){});
+    }catch(_){}
+  }
+}
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ============================ images: profile + banner ============================ */
@@ -1155,11 +1171,16 @@ const b_fullName=document.getElementById('b-fullName'), b_headline=document.getE
   b_skills=document.getElementById('b-skills');
 
 /* ============================ init ============================ */
-function init(){
+function renderEditor(){
   applyTheme(P.theme);
   paintBanner(); paintAvatar(); renderBio(); renderContent(); renderSwatches(); paintTheme(); renderIconStyles();
+}
+function init(){
+  renderEditor();
   /* arrived from the profile's edit mode wanting to edit one item? open it. */
   try{ const eid=localStorage.getItem('dot_edit_item'); if(eid){ localStorage.removeItem('dot_edit_item'); const c=P.content.find(x=>x.id===eid); if(c) setTimeout(()=>openAddForm(c.type, eid), 80); } }catch(_){}
+  /* load the latest published profile from Firestore for the owner */
+  if(window.FB_ON){ window.fbReady(function(u){ if(!u) return; window.fbFetchSite(SITE_ID).then(function(d){ if(d && d.bio){ P=d; try{localStorage.setItem(KEY,JSON.stringify(P));}catch(_){} renderEditor(); } }).catch(function(){}); }); }
 }
 init();
 </script>

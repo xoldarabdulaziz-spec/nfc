@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Firestore Security Rules — server-side, cannot be bypassed by the browser.
+// Copy this into:  Firebase Console -> Firestore Database -> Rules -> Publish.
+//
+//  • Anyone (visitors / NFC taps) can READ a profile  -> Preview is public.
+//  • Only the SIGNED-IN OWNER of a site can CREATE/UPDATE/DELETE it  -> Edit
+//    is restricted to your authenticated account. No dev-tools / direct-URL
+//    bypass is possible because the rule runs on Google's servers.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /sites/{siteId} {
+      // public read (preview)
+      allow read: if true;
+
+      // create: must be signed in and stamp yourself as the owner
+      allow create: if request.auth != null
+                    && request.resource.data.owner == request.auth.uid;
+
+      // update / delete: only the current owner of the document
+      allow update, delete: if request.auth != null
+                            && resource.data.owner == request.auth.uid
+                            && request.resource.data.owner == request.auth.uid;
+    }
+
+    // everything else is denied by default
+  }
+}
