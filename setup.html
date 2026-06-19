@@ -556,6 +556,9 @@ html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
   <div class="toast" id="toast">Saved</div>
 
 <script>
+/* ===== owner-only guard: editing requires the owner to be logged in ===== */
+if (localStorage.getItem('dot_logged_in') !== '1') { location.replace('login.html'); }
+
 /* ============================ data ============================ */
 /* each site/client gets its own saved profile */
 const SITE_ID = (function(){ try{ return localStorage.getItem('dot_edit_site') || 'default'; }catch(_){ return 'default'; } })();

@@ -232,6 +232,9 @@ function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.par
   return { avatar:'',banner:'',bio:{fullName:nm,headline:'',jobTitle:'',company:'',location:'',education:'',skills:[]}, content:[], iconStyle:'gradient' }; }
 
 let MODE = (new URLSearchParams(location.search).get('mode')==='edit') ? 'edit' : 'preview';
+/* ===== role gate: only the logged-in owner gets Edit; everyone else is read-only ===== */
+const IS_OWNER = (function(){ try{ return localStorage.getItem('dot_logged_in')==='1'; }catch(_){ return false; } })();
+if(!IS_OWNER) MODE = 'preview';   // visitors can never start in edit, even via ?mode=edit
 
 function renderProfile(){
   // avatar + banner
@@ -245,8 +248,10 @@ function renderProfile(){
   document.getElementById('ptags').innerHTML = (P.bio.skills||[]).map(s=>`<span class="ptag">${esc(s)}</span>`).join('');
 }
 function renderHeader(){
-  document.getElementById('hLeft').style.display  = MODE==='edit' ? 'grid' : 'none';
-  document.getElementById('hRight').style.display = MODE==='edit' ? 'grid' : 'none';
+  /* the edit/preview switch only exists for the owner — visitors don't see it */
+  const tog=document.querySelector('.eptoggle'); if(tog) tog.style.display = IS_OWNER ? 'flex' : 'none';
+  document.getElementById('hLeft').style.display  = (IS_OWNER && MODE==='edit') ? 'grid' : 'none';
+  document.getElementById('hRight').style.display = (IS_OWNER && MODE==='edit') ? 'grid' : 'none';
   document.getElementById('tEdit').classList.toggle('on', MODE==='edit');
   document.getElementById('tPrev').classList.toggle('on', MODE==='preview');
 }
@@ -291,7 +296,7 @@ function reportHeight(){
 window.addEventListener('load', reportHeight);
 setTimeout(reportHeight, 400);   // re-report after fonts settle
 
-function setMode(m){ MODE=m; const u=new URL(location); u.searchParams.set('mode',m); history.replaceState(null,'',u); renderAll(); }
+function setMode(m){ if(m==='edit' && !IS_OWNER){ location.href='login.html'; return; } MODE=m; const u=new URL(location); u.searchParams.set('mode',m); history.replaceState(null,'',u); renderAll(); }
 function openLink(type,value){ const href=resolve(type,value); if(!href){ toast('Nothing to open'); return; }
   if(href.startsWith('mailto:')||href.startsWith('tel:')) location.href=href; else window.open(href,'_blank','noopener'); }
 function goSetup(){ try{ localStorage.removeItem('dot_edit_item'); }catch(_){} location.href='setup.html'; }
