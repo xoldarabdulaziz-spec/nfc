@@ -534,7 +534,7 @@ function render(){
           ${iconBtn('swap','Transfer',`toast('Transfer')`)}
           ${iconBtn('trash','Delete',`deleteSite('${s.id}')`)}
           ${iconBtn('pin','Pin',`toast('Pinned')`)}
-          ${iconBtn('gear','Edit profile',`editProfile('${s.id}')`)}
+          ${iconBtn('gear','Settings',`editSite('${s.id}')`)}
         </div>
         <a class="view-btn" href="#" onclick="openProfile('${s.id}');return false;">View</a>
       </div>
@@ -578,7 +578,8 @@ function openModal(id){
 
   if(editingId){
     const s = sites.find(x => x.id === editingId) || {};
-    document.getElementById('mTitle').textContent = 'Edit site';
+    document.getElementById('mTitle').textContent = 'Site settings';
+    document.getElementById('saveBtn').textContent = 'Save';
     name.value = s.name || '';
     // show only the subdomain part in the field (strip the .carrd.com suffix)
     dom.value  = (s.domain && s.domain.endsWith(DOMAIN_SUFFIX))
@@ -588,6 +589,7 @@ function openModal(id){
     selectedGrad = s.grad || GRADS[0];
   } else {
     document.getElementById('mTitle').textContent = 'Add new site';
+    document.getElementById('saveBtn').textContent = 'Create site';
     name.value = ''; dom.value = ''; link.value = '';
     selectedGrad = GRADS[Math.floor(Math.random()*GRADS.length)];
   }
