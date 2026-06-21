@@ -23,6 +23,7 @@
   --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.13);
   --text:#eef2f7; --muted:#8b94a3; --faint:#677183; --label:#7d8799;
   --purple:#7c6cff; --blue:#3b82f6; --green:#34c759; --danger:#f0556a;
+  --accent:#3d4350; --accent-ink:#ffffff;
   --radius:16px;
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -62,7 +63,7 @@ img,svg{ display:block; }
   margin-bottom:34px;            /* room for the avatar to hang below the banner */
 }
 .banner .banner-img{ position:absolute; inset:0; border-radius:var(--radius); background-size:cover; background-position:center; }
-.banner .grad{ position:absolute; inset:0; border-radius:var(--radius); background:linear-gradient(160deg,#323a49,#171c26 75%); }
+.banner .grad{ position:absolute; inset:0; border-radius:var(--radius); background:linear-gradient(160deg, var(--accent), #171c26 78%); }
 .avatar{
   position:absolute; left:22px; bottom:-38px; width:112px; height:112px; border-radius:50%; z-index:2;
   background:#9aa3b2 center/cover no-repeat; border:4px solid var(--card);
@@ -410,7 +411,7 @@ html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
       <div class="card stylecard">
         <div class="hd">
           <span class="name">Color</span>
-          <span class="badge"><span class="dot" id="colorDot"></span><span id="colorName">Black</span></span>
+          <span class="badge"><span class="dot" id="colorDot"></span><span id="colorName">Gray</span></span>
         </div>
         <div class="swatches" id="swatches"></div>
         <button class="upgrade" onclick="toast('Upgrade — unlimited colors')">
@@ -573,8 +574,16 @@ const KEY = 'dot_profile_' + SITE_ID;
 
 const COLORS = [
   {key:'red',hex:'#ef4444'},{key:'yellow',hex:'#f5b50a'},{key:'green',hex:'#22c55e'},
-  {key:'teal',hex:'#14b8a6'},{key:'blue',hex:'#3b82f6'},{key:'purple',hex:'#8b5cf6'},{key:'black',hex:'#3b3f48'}
+  {key:'teal',hex:'#14b8a6'},{key:'blue',hex:'#3b82f6'},{key:'purple',hex:'#8b5cf6'},
+  {key:'gray',hex:'#6b7280'},{key:'white',hex:'#ffffff'}
 ];
+/* map a saved colour key to its hex + a readable ink colour */
+const ACCENTS={red:'#ef4444',yellow:'#f5b50a',green:'#22c55e',teal:'#14b8a6',blue:'#3b82f6',purple:'#8b5cf6',gray:'#6b7280',white:'#ffffff',black:'#3b3f48'};
+function accentInk(hex){ const c=hex.replace('#',''); const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+  return ((0.299*r+0.587*g+0.114*b)/255>0.62)?'#16181d':'#ffffff'; }
+function applyAccent(key){ const s=document.documentElement.style;
+  if(!key||!ACCENTS[key]){ s.removeProperty('--accent'); s.removeProperty('--accent-ink'); return; }
+  s.setProperty('--accent',ACCENTS[key]); s.setProperty('--accent-ink',accentInk(ACCENTS[key])); }
 const ICON_STYLES = ['gradient','light','white','black'];
 
 /* ---- white glyphs (platforms without one fall back to a letter monogram) ---- */
@@ -776,6 +785,7 @@ function defaults(){
   };
 }
 let P = load();
+if(P.color==='black') P.color='gray';   /* migrate legacy key to the new palette */
 function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o && o.bio){ if(Array.isArray(o.content)) o.content=o.content.filter(c=>!(c.type==='instagram'&&c.value==='instagram.com/'&&!c.title)); return o; } } }catch(_){} return defaults(); }
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(P)); }catch(_){}
@@ -1135,10 +1145,11 @@ function enableDrag(){
 /* ============================ Style: color / theme / icon ============================ */
 function renderSwatches(){
   document.getElementById('swatches').innerHTML = COLORS.map(c=>
-    `<button class="swatch${c.key===P.color?' sel':''}" style="background:${c.hex}" onclick="setColor('${c.key}')" aria-label="${c.key}"></button>`).join('');
+    `<button class="swatch${c.key===P.color?' sel':''}" style="background:${c.hex}${c.key==='white'?';border-color:rgba(0,0,0,.18)':''}" onclick="setColor('${c.key}')" aria-label="${c.key}"></button>`).join('');
   const cur=COLORS.find(c=>c.key===P.color)||COLORS[6];
   document.getElementById('colorDot').style.background=cur.hex;
   document.getElementById('colorName').textContent=cur.key.charAt(0).toUpperCase()+cur.key.slice(1);
+  applyAccent(P.color);
 }
 function setColor(k){ P.color=k; save(); renderSwatches(); }
 function paintTheme(){ document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('sel', b.dataset.theme===P.theme)); }

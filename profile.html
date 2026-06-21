@@ -20,6 +20,7 @@
   --bg:#151a23; --card:#1b212c; --card-2:#222936; --head:#171c26;
   --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.13);
   --text:#eef2f7; --muted:#8b94a3; --faint:#677183; --radius:16px;
+  --accent:#3d4350; --accent-ink:#ffffff;
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body{ margin:0; }
@@ -43,7 +44,7 @@ img,svg{ display:block; }
 
 /* profile card */
 .pcard{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.35); }
-.pbanner{ position:relative; height:172px; background:linear-gradient(160deg,#2b3340,#171c26 80%); }
+.pbanner{ position:relative; height:172px; background:linear-gradient(160deg, var(--accent), #171c26 82%); }
 .pbanner .bimg{ position:absolute; inset:0; background-size:cover; background-position:center; }
 .pavatar{ position:absolute; left:20px; bottom:-30px; width:92px; height:92px; border-radius:50%;
   border:4px solid var(--card); background:#9aa3b2 center/cover no-repeat; box-shadow:0 6px 18px rgba(0,0,0,.4);
@@ -54,7 +55,7 @@ img,svg{ display:block; }
 /* edit/preview toggle */
 .eptoggle{ position:absolute; right:12px; bottom:10px; z-index:3; display:flex; background:rgba(20,24,32,.7); backdrop-filter:blur(6px); border:1px solid var(--line-2); border-radius:10px; padding:3px; }
 .eptoggle button{ border:none; background:none; color:var(--muted); font-family:inherit; font-size:12.5px; font-weight:700; padding:5px 12px; border-radius:8px; cursor:pointer; }
-.eptoggle button.on{ background:#3a4150; color:#fff; }
+.eptoggle button.on{ background:var(--accent); color:var(--accent-ink); }
 
 .pinfo{ padding:40px 18px 18px; }
 .pname{ font-size:22px; font-weight:800; letter-spacing:-.01em; }
@@ -64,11 +65,11 @@ img,svg{ display:block; }
 
 /* actions */
 .pactions{ display:flex; gap:10px; margin-top:16px; }
-.pbtn{ flex:1; height:54px; border:none; border-radius:14px; cursor:pointer; background:#3d4350; color:#fff;
+.pbtn{ flex:1; height:54px; border:1px solid rgba(0,0,0,.06); border-radius:14px; cursor:pointer; background:var(--accent); color:var(--accent-ink);
   font-family:inherit; font-size:15.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:9px; }
-.pbtn:hover{ background:#474e5c; } .pbtn:active{ transform:translateY(1px); }
-.pbtn-ico{ width:54px; flex:0 0 54px; height:54px; border-radius:14px; border:none; cursor:pointer; background:#23262e;
-  border:1px solid var(--line-2); color:var(--text); display:grid; place-items:center; }
+.pbtn:hover{ filter:brightness(1.06); } .pbtn:active{ transform:translateY(1px); }
+.pbtn-ico{ width:54px; flex:0 0 54px; height:54px; border-radius:14px; cursor:pointer; background:var(--accent);
+  border:1px solid rgba(0,0,0,.06); color:var(--accent-ink); display:grid; place-items:center; }
 .pbtn-ico:active{ transform:scale(.95); }
 
 /* links */
@@ -98,11 +99,9 @@ html.t-dark{
   --text:#f3f5f8; --muted:#9098a6; --faint:#6b7280;
 }
 html.t-bright .ptag{ background:#e9ebef; color:#3b4150; }
-html.t-bright .phead .hicon,
-html.t-bright .pbtn-ico{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#16181d; }
+html.t-bright .phead .hicon{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#16181d; }
 html.t-bright .eptoggle{ background:rgba(255,255,255,.85); border-color:rgba(0,0,0,.12); }
 html.t-bright .eptoggle button{ color:#6b7280; }
-html.t-bright .eptoggle button.on{ background:#16181d; color:#ffffff; }
 html.t-bright .phead .logo svg path{ stroke:#16181d; }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
@@ -224,6 +223,7 @@ function resolve(key,v){ const it=CAT[key]||{}; v=(v||'').trim(); if(!v) return 
 const SITE_ID=(function(){ try{ const p=new URLSearchParams(location.search).get('site'); return p || localStorage.getItem('dot_edit_site') || 'default'; }catch(_){ return 'default'; } })();
 const KEY='dot_profile_'+SITE_ID;
 let P=load();
+if(P.color==='black') P.color='gray';   /* migrate legacy key to the new palette */
 function load(){ try{ const r=localStorage.getItem(KEY); if(r){ const o=JSON.parse(r); if(o&&o.bio){ if(Array.isArray(o.content)) o.content=o.content.filter(c=>!(c.type==='instagram'&&c.value==='instagram.com/'&&!c.title)); return o; } } }catch(_){}
   let nm='Your Name'; try{ const ss=JSON.parse(localStorage.getItem('dot_sites')||'[]'); const s=ss.find(x=>x.id===SITE_ID); if(s&&s.name) nm=s.name; }catch(_){}
   return { avatar:'',banner:'',bio:{fullName:nm,headline:'',jobTitle:'',company:'',location:'',education:'',skills:[]}, content:[], iconStyle:'gradient' }; }
@@ -280,7 +280,14 @@ function renderLinks(){
   }).join('');
 }
 function applyTheme(t){ const c=document.documentElement.classList; c.remove('t-bright','t-dim','t-dark'); c.add('t-'+(t||'dim')); }
-function renderAll(){ applyTheme(P.theme); renderProfile(); renderHeader(); renderActions(); renderLinks(); reportHeight(); }
+/* ===== accent colour: banner + action buttons, applied in both edit & preview ===== */
+const ACCENTS={red:'#ef4444',yellow:'#f5b50a',green:'#22c55e',teal:'#14b8a6',blue:'#3b82f6',purple:'#8b5cf6',gray:'#6b7280',white:'#ffffff',black:'#3b3f48'};
+function accentInk(hex){ const c=hex.replace('#',''); const r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+  return ((0.299*r+0.587*g+0.114*b)/255>0.62)?'#16181d':'#ffffff'; }
+function applyAccent(key){ const s=document.documentElement.style;
+  if(!key||!ACCENTS[key]){ s.removeProperty('--accent'); s.removeProperty('--accent-ink'); return; }
+  s.setProperty('--accent',ACCENTS[key]); s.setProperty('--accent-ink',accentInk(ACCENTS[key])); }
+function renderAll(){ applyTheme(P.theme); applyAccent(P.color); renderProfile(); renderHeader(); renderActions(); renderLinks(); reportHeight(); }
 /* when embedded as a dashboard mini-preview, tell the parent where the
    profile card ends (so it can clip just before the Save Contact button) */
 function reportHeight(){
