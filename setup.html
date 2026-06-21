@@ -146,14 +146,6 @@ img,svg{ display:block; }
 .swatch{ width:30px; height:30px; border-radius:50%; cursor:pointer; border:2px solid transparent; padding:0; }
 .swatch.sel{ box-shadow:0 0 0 2px var(--card), 0 0 0 4px #fff; }
 
-.upgrade{
-  width:100%; padding:13px; border-radius:12px; cursor:pointer;
-  background:#1e2531; border:1px solid var(--line-2); color:var(--text);
-  font-family:inherit; font-size:13.5px; font-weight:700;
-  display:flex; align-items:center; justify-content:center; gap:9px;
-}
-.upgrade .spark{ color:var(--purple); }
-
 .divline{ height:1px; background:var(--line); margin:16px 0; }
 .style-h{ font-size:14px; font-weight:700; margin-bottom:11px; }
 
@@ -334,7 +326,6 @@ html.t-bright .topbar .back,
 html.t-bright .fs-head .back,
 html.t-bright .pillbtn,
 html.t-bright .upload,
-html.t-bright .upgrade,
 html.t-bright .cc{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#16181d; }
 html.t-bright .chip{ background:#e9ebef; color:#3b4150; }
 html.t-bright .badge,
@@ -414,10 +405,6 @@ html.t-bright .istyle.sel{ box-shadow:0 0 0 2px #ffffff, 0 0 0 4px #16181d; }
           <span class="badge"><span class="dot" id="colorDot"></span><span id="colorName">Gray</span></span>
         </div>
         <div class="swatches" id="swatches"></div>
-        <button class="upgrade" onclick="toast('Upgrade — unlimited colors')">
-          <span class="spark"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 4.8L19 8l-4.2 2.2L12 15l-2.8-4.8L5 8l5.2-1.2L12 2z"/></svg></span>
-          Upgrade for Unlimited Colors
-        </button>
 
         <div class="divline"></div>
         <div class="style-h">Theme</div>
