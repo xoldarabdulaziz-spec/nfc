@@ -56,6 +56,7 @@ body{
   background:var(--sidebar); border-right:1px solid var(--line);
   display:flex; flex-direction:column; align-items:center;
   padding:16px 0; gap:18px; position:sticky; top:0; height:100dvh;
+  z-index:70;   /* lift the whole sidebar (and its logout popover) above the cards */
 }
 
 /* LOGO SLOT — replace the inner <svg> with <img src="logo.png" class="logo-img"> when you have your logo */
@@ -89,7 +90,7 @@ body{
 .popover{
   position:absolute; left:54px; bottom:0; width:210px;
   background:var(--card-2); border:1px solid var(--line-2); border-radius:14px;
-  box-shadow:var(--shadow); padding:12px; display:none; z-index:40;
+  box-shadow:var(--shadow); padding:12px; display:none; z-index:90;
 }
 .popover.show{ display:block; }
 .popover .pemail{ font-size:12.5px; color:var(--muted); word-break:break-all; margin-bottom:10px; }
