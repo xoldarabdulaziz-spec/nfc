@@ -164,20 +164,27 @@ body{
 .card-title{ font-size:16px; font-weight:700; letter-spacing:-.01em; }
 .card-domain{ font-size:13px; color:var(--muted); margin-top:2px; }
 
-.card-actions{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px 14px; margin-top:auto; }
-.act-icons{ display:flex; gap:2px; }
+.card-actions{ display:flex; flex-wrap:nowrap; align-items:center; justify-content:space-between; gap:6px; padding:12px 12px 14px; margin-top:auto; }
+.act-icons{ display:flex; flex-wrap:nowrap; gap:2px; min-width:0; }
 .act{
-  width:32px; height:32px; border-radius:9px; border:none; background:none; cursor:pointer;
+  width:30px; height:30px; flex:0 0 auto; border-radius:9px; border:none; background:none; cursor:pointer;
   color:var(--faint); display:grid; place-items:center; transition:.14s;
 }
 .act:hover{ background:var(--card-2); color:var(--text); }
-.act svg{ width:16px; height:16px; }
+.act svg{ width:15px; height:15px; }
 .view-btn{
-  padding:8px 18px; border-radius:10px; text-decoration:none;
+  flex:0 0 auto; padding:8px 16px; border-radius:10px; text-decoration:none;
   background:var(--card-2); border:1px solid var(--line-2); color:var(--text);
   font-size:13px; font-weight:700; transition:.15s; white-space:nowrap;
 }
 .view-btn:hover{ background:var(--teal); color:#07221f; border-color:transparent; }
+
+/* compact action row for the dense (4-up) grid so every icon + View still fit */
+.sites.grid-sm .card-actions{ padding:10px 8px 12px; gap:6px; }
+.sites.grid-sm .act{ width:26px; height:26px; }
+.sites.grid-sm .act svg{ width:14.5px; height:14.5px; }
+.sites.grid-sm .act-icons{ gap:0; }
+.sites.grid-sm .view-btn{ padding:7px 12px; font-size:12.5px; }
 
 /* ---- list view ---- */
 .sites.list .card{ flex-direction:row; align-items:center; }
