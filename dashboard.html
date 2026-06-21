@@ -139,11 +139,22 @@ body{
 .sites.list   { grid-template-columns:1fr; gap:12px; }
 
 .card{
+  position:relative;
   background:var(--card); border:1px solid var(--line); border-radius:18px;
   overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,.25); transition:.18s;
   display:flex; flex-direction:column;
 }
 .card:hover{ transform:translateY(-3px); border-color:var(--line-2); box-shadow:var(--shadow); }
+/* pinned site: accent ring + badge in the top corner */
+.card.pinned{ border-color:rgba(45,212,191,.45); box-shadow:0 6px 20px rgba(45,212,191,.16); }
+.pin-badge{
+  position:absolute; top:10px; right:10px; z-index:6;
+  width:30px; height:30px; border-radius:9px; display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--teal),var(--teal-2)); color:#07221f;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+}
+.pin-badge svg{ width:15px; height:15px; }
+.act.pin-on{ background:rgba(45,212,191,.16); color:var(--teal); }
 
 /* live mini-preview of the actual profile (scaled iframe) */
 .card-prev{ position:relative; width:100%; overflow:hidden; background:#0d0e11; border-bottom:1px solid var(--line); }
@@ -241,6 +252,27 @@ body{
   color:#07221f; background:linear-gradient(135deg,var(--teal),var(--teal-2));
 }
 .btn-primary:hover{ filter:brightness(1.06); }
+
+/* ----- delete confirmation modal ----- */
+.confirm-modal{ max-width:380px; text-align:center; }
+.confirm-icon{
+  width:56px; height:56px; margin:2px auto 14px; border-radius:15px; display:grid; place-items:center;
+  background:rgba(240,85,106,.14); color:var(--danger);
+}
+.confirm-icon svg{ width:26px; height:26px; }
+.confirm-title{ font-size:17px; font-weight:800; line-height:1.4; margin:0 0 6px; }
+.confirm-sub{ font-size:13px; color:var(--muted); margin:0; }
+.confirm-actions{ justify-content:center; margin-top:22px; }
+.btn-danger{
+  padding:11px 26px; border-radius:10px; border:none; cursor:pointer; font-family:inherit; font-weight:700;
+  color:#fff; background:linear-gradient(135deg,#f0556a,#e23b53);
+}
+.btn-danger:hover{ filter:brightness(1.06); }
+.btn-success{
+  padding:11px 26px; border-radius:10px; border:none; cursor:pointer; font-family:inherit; font-weight:700;
+  color:#07221f; background:linear-gradient(135deg,var(--teal),var(--teal-2));
+}
+.btn-success:hover{ filter:brightness(1.06); }
 
 /* =====================  RESPONSIVE  ===================== */
 @media (max-width:760px){
@@ -388,6 +420,21 @@ body{
     </div>
   </div>
 
+  <!-- ===================== DELETE CONFIRM MODAL ===================== -->
+  <div class="modal-overlay" id="confirmModal" onclick="if(event.target===this)closeConfirm()">
+    <div class="modal confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="confirm-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/></svg>
+      </div>
+      <h3 id="confirmTitle" class="confirm-title">Are you sure you want to delete this website?</h3>
+      <p class="confirm-sub">This action cannot be undone.</p>
+      <div class="modal-actions confirm-actions">
+        <button type="button" class="btn-danger" onclick="confirmDelete()">Delete</button>
+        <button type="button" class="btn-success" onclick="closeConfirm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast">Done</div>
 
 <script>
@@ -480,14 +527,14 @@ function persist(){
 /* keep any already-saved profile fields when writing the site meta */
 function mergeProfile(s){
   let prof={}; try{ const r=localStorage.getItem('dot_profile_'+s.id); if(r) prof=JSON.parse(r); }catch(_){}
-  return Object.assign({}, prof, { name:s.name, domain:s.domain, grad:s.grad, link:s.link });
+  return Object.assign({}, prof, { name:s.name, domain:s.domain, grad:s.grad, link:s.link, pinned:!!s.pinned });
 }
 /* pull the owner's sites from Firestore on load */
 function fbSyncSites(){
   if(!window.FB_ON) return;
   window.fbListSites().then(function(arr){
     if(arr && arr.length){
-      sites = arr.map(function(d){ return { id:d.id, name:d.name||'(untitled)', domain:d.domain||'', grad:d.grad||GRADS[0], link:d.link||'#', logo:d.logo }; });
+      sites = arr.map(function(d){ return { id:d.id, name:d.name||'(untitled)', domain:d.domain||'', grad:d.grad||GRADS[0], link:d.link||'#', logo:d.logo, pinned:!!d.pinned }; });
       try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }catch(_){}
       render();
     }
@@ -514,14 +561,18 @@ function iconBtn(kind,label,handler){
 /* ---- render cards ---- */
 function render(){
   const wrap = document.getElementById('sites');
-  wrap.innerHTML = sites.map(s => {
-    const ava   = s.logo ? NFC_MARK : esc(s.name.trim().charAt(0).toUpperCase() || '?');
+  wrap.innerHTML = orderedSites().map(s => {
+    const ava    = s.logo ? NFC_MARK : esc(s.name.trim().charAt(0).toUpperCase() || '?');
+    const pinned = !!s.pinned;
     const real  = s.link && s.link !== '#';
     const view  = real
         ? `href="${esc(s.link)}"`
         : `href="#" onclick="toast('Opening site…');return false;"`;
+    const pinBtn = `<button class="act${pinned?' pin-on':''}" title="${pinned?'Unpin':'Pin'}" aria-label="${pinned?'Unpin':'Pin'}" onclick="togglePin('${s.id}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS.pin}</svg></button>`;
     return `
-    <article class="card">
+    <article class="card${pinned?' pinned':''}">
+      ${pinned ? `<div class="pin-badge" title="Pinned"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS.pin}</svg></div>` : ''}
       <div class="card-prev"><iframe src="profile.html?site=${encodeURIComponent(s.id)}&amp;mode=preview&amp;embed=1" scrolling="no" loading="lazy" onload="fitPreview(this)" title="${esc(s.name)} preview"></iframe></div>
       <div class="card-body">
         <div class="card-title">${esc(s.name)}</div>
@@ -533,7 +584,7 @@ function render(){
           ${iconBtn('copy','Duplicate',`duplicateSite('${s.id}')`)}
           ${iconBtn('swap','Transfer',`toast('Transfer')`)}
           ${iconBtn('trash','Delete',`deleteSite('${s.id}')`)}
-          ${iconBtn('pin','Pin',`toast('Pinned')`)}
+          ${pinBtn}
           ${iconBtn('gear','Settings',`editSite('${s.id}')`)}
         </div>
         <a class="view-btn" href="#" onclick="openProfile('${s.id}');return false;">View</a>
@@ -653,13 +704,39 @@ function duplicateSite(id){
   persist(); render(); toast('Duplicated');
 }
 
+/* pinned sites float to the top (stable within each group) */
+function orderedSites(){
+  return sites.map((s,i)=>({s,i}))
+    .sort((a,b)=> (b.s.pinned?1:0)-(a.s.pinned?1:0) || a.i-b.i)
+    .map(o=>o.s);
+}
+/* pin -> move to the very front of the list; unpin -> drop back to normal */
+function togglePin(id){
+  const i = sites.findIndex(x => x.id === id);
+  if(i < 0) return;
+  const s = sites[i];
+  s.pinned = !s.pinned;
+  if(s.pinned){ sites.splice(i,1); sites.unshift(s); }   // newly pinned becomes first
+  persist(); render(); toast(s.pinned ? 'Pinned to top' : 'Unpinned');
+}
+
+/* ---- delete (with a centred confirmation modal) ---- */
+let pendingDeleteId = null;
 function deleteSite(id){
-  const s = sites.find(x => x.id === id);
-  if(!s) return;
-  if(!confirm('Delete "'+s.name+'"? This cannot be undone.')) return;
+  if(!sites.some(x => x.id === id)) return;
+  pendingDeleteId = id;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeConfirm(){
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingDeleteId = null;
+}
+function confirmDelete(){
+  const id = pendingDeleteId;
+  if(!id){ closeConfirm(); return; }
   sites = sites.filter(x => x.id !== id);
   if(window.FB_ON && window.FB_USER){ try{ window.fbDeleteSite(id).catch(function(){}); }catch(_){} }
-  persist(); render(); toast('Site deleted');
+  persist(); render(); closeConfirm(); toast('Site deleted');
 }
 
 /* ---- view switch (large grid / small grid / list) ---- */
@@ -690,7 +767,7 @@ function toast(msg){
 }
 
 /* close modal on Escape */
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeModal(); closeConfirm(); } });
 
 /* ---- init ---- */
 document.getElementById('pemail').textContent = USER_EMAIL;
