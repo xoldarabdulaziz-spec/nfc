@@ -230,11 +230,11 @@ body{
   padding:11px 12px; outline:none; transition:.15s;
 }
 .m-input:focus{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(45,212,191,.14); }
-/* subdomain field: [ input ].carrd.com */
+/* username field: nfc-uzbekistan.com/[ input ] */
 .field-sub{ display:flex; align-items:stretch; background:var(--bg); border:1px solid var(--line); border-radius:10px; overflow:hidden; transition:.15s; }
 .field-sub:focus-within{ border-color:var(--teal); box-shadow:0 0 0 3px rgba(45,212,191,.14); }
 .sub-input{ flex:1; min-width:0; border:none; background:none; outline:none; color:var(--text); font-family:inherit; font-size:14.5px; padding:11px 12px; }
-.field-sub .suffix{ display:flex; align-items:center; padding:0 13px; white-space:nowrap; color:var(--muted); font-size:14px; background:var(--card-2); border-left:1px solid var(--line); }
+.field-sub .prefix{ display:flex; align-items:center; padding:0 13px; white-space:nowrap; color:var(--muted); font-size:14px; background:var(--card-2); border-right:1px solid var(--line); }
 .m-preview{ font-size:12.5px; color:var(--muted); margin-top:8px; }
 .m-preview b{ color:var(--teal); font-weight:700; }
 .field-sub.invalid{ border-color:var(--danger); box-shadow:0 0 0 3px rgba(240,85,106,.14); }
@@ -402,17 +402,17 @@ body{
         <label class="m-label" for="m-name">Site name</label>
         <input id="m-name" class="m-input" placeholder="My new site" autocomplete="off" />
 
-        <label class="m-label" for="m-domain">Subdomain</label>
+        <label class="m-label" for="m-domain">Username</label>
         <div class="field-sub">
-          <input id="m-domain" class="sub-input" placeholder="nfc" autocomplete="off"
+          <span class="prefix" id="m-prefix">nfc-uzbekistan.com/</span>
+          <input id="m-domain" class="sub-input" placeholder="username" autocomplete="off"
                  spellcheck="false" oninput="onSubInput()" />
-          <span class="suffix" id="m-suffix">.card.com</span>
         </div>
-        <div class="m-preview">Your site URL: <b id="m-preview">nfc.card.com</b></div>
-        <div class="sub-err" id="m-sub-error">This URL has already been taken. You cannot create a site with this URL. Please choose a different subdomain.</div>
+        <div class="m-preview">Your page URL: <b id="m-preview">nfc-uzbekistan.com/your-site</b></div>
+        <div class="sub-err" id="m-sub-error">This URL has already been taken. You cannot create a page with this URL. Please choose a different username.</div>
         <div class="sub-ok" id="m-sub-ok">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          <span id="m-ok-text">This subdomain is available</span>
+          <span id="m-ok-text">This username is available</span>
         </div>
 
         <label class="m-label" for="m-link">Open link (where “View” goes)</label>
@@ -455,12 +455,12 @@ const USER_EMAIL = "xoldar.abdulaziz@gmail.com";
 const STORE_KEY  = "dot_sites";   // user's saved sites live here (per browser)
 
 /* default cards shown on first ever visit */
-const DOMAIN_SUFFIX = ".card.com";   // every site URL becomes <subdomain>.card.com
+const DOMAIN_PREFIX = "nfc-uzbekistan.com/";   // every page URL becomes nfc-uzbekistan.com/<username>
 
 const DEFAULT_SITES = [
-  { id:"nfc",   name:"NFC Card",     domain:"nfc.card.com",         link:"card.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
-  { id:"ava",   name:"AVA STORE",    domain:"avastore.card.com",    link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
-  { id:"press", name:"Studio Press", domain:"studiopress.card.com", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
+  { id:"nfc",   name:"NFC Card",     domain:"nfc-uzbekistan.com/nfc",         link:"card.html", grad:"linear-gradient(135deg,#7c5cff,#ff5c8a)", logo:true },
+  { id:"ava",   name:"AVA STORE",    domain:"nfc-uzbekistan.com/avastore",    link:"#",          grad:"linear-gradient(135deg,#3b82f6,#22d3ee)" },
+  { id:"press", name:"Studio Press", domain:"nfc-uzbekistan.com/studiopress", link:"#",          grad:"linear-gradient(135deg,#f59e0b,#ef4444)" }
 ];
 
 /* turn whatever the user typed into a safe subdomain label */
@@ -468,11 +468,11 @@ function sanitizeSub(v){ return String(v).trim().toLowerCase().replace(/[^a-z0-9
 /* live preview of the resulting URL while typing in the modal */
 function updatePreview(){
   const sub = sanitizeSub(document.getElementById('m-domain').value) || 'your-site';
-  document.getElementById('m-preview').textContent = sub + DOMAIN_SUFFIX;
+  document.getElementById('m-preview').textContent = DOMAIN_PREFIX + sub;
 }
 /* is this subdomain already used by another site? */
 function isTaken(sub){
-  const domain = sub + DOMAIN_SUFFIX;
+  const domain = DOMAIN_PREFIX + sub;
   return sites.some(s => s.id !== editingId && String(s.domain).toLowerCase() === domain.toLowerCase());
 }
 /* live validation: red "already taken" / green "available", and Save enable/disable */
@@ -497,7 +497,7 @@ function checkSubdomain(){
     btn.disabled = true;
   } else {                               // available -> green success, Save enabled
     errEl.classList.remove('show'); field.classList.remove('invalid');
-    document.getElementById('m-ok-text').textContent = sub + DOMAIN_SUFFIX + ' is available';
+    document.getElementById('m-ok-text').textContent = DOMAIN_PREFIX + sub + ' is available';
     okEl.classList.add('show');          field.classList.add('valid');
     btn.disabled = false;
   }
@@ -640,10 +640,10 @@ function openModal(id){
     document.getElementById('mTitle').textContent = 'Site settings';
     document.getElementById('saveBtn').textContent = 'Save';
     name.value = s.name || '';
-    // show only the subdomain part in the field (strip the .carrd.com suffix)
-    dom.value  = (s.domain && s.domain.endsWith(DOMAIN_SUFFIX))
-                   ? s.domain.slice(0, -DOMAIN_SUFFIX.length)
-                   : (s.domain || '').split('.')[0];
+    // show only the username part in the field (strip the nfc-uzbekistan.com/ prefix)
+    dom.value  = (s.domain && s.domain.startsWith(DOMAIN_PREFIX))
+                   ? s.domain.slice(DOMAIN_PREFIX.length)
+                   : (s.domain || '').split('/').pop();
     link.value = (s.link && s.link !== '#') ? s.link : '';
     selectedGrad = s.grad || GRADS[0];
   } else {
@@ -671,11 +671,11 @@ function saveSite(e){
   let   link = document.getElementById('m-link').value.trim();
 
   if(!name){ showErr('Please enter a site name'); document.getElementById('m-name').focus(); return; }
-  if(!sub) { showErr('Please enter a subdomain (e.g. nfc)'); document.getElementById('m-domain').focus(); return; }
+  if(!sub) { showErr('Please enter a username (e.g. john)'); document.getElementById('m-domain').focus(); return; }
   if(isTaken(sub)){ checkSubdomain(); document.getElementById('m-domain').focus(); return; } // block duplicate URL
   if(!link) link = '#';
 
-  const domain = sub + DOMAIN_SUFFIX;   // e.g. nfc -> nfc.card.com
+  const domain = DOMAIN_PREFIX + sub;   // e.g. john -> nfc-uzbekistan.com/john
 
   let newId = null;
   if(editingId){
