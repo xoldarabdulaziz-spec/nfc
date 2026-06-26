@@ -55,7 +55,9 @@ img,svg{ display:block; }
 /* edit/preview toggle */
 .eptoggle{ position:absolute; right:12px; bottom:10px; z-index:3; display:flex; background:rgba(20,24,32,.7); backdrop-filter:blur(6px); border:1px solid var(--line-2); border-radius:10px; padding:3px; }
 .eptoggle button{ border:none; background:none; color:var(--muted); font-family:inherit; font-size:12.5px; font-weight:700; padding:5px 12px; border-radius:8px; cursor:pointer; }
-.eptoggle button.on{ background:var(--accent); color:var(--accent-ink); }
+/* active pill is always a dark chip with white text so the label stays
+   readable on any theme, banner colour, or accent (incl. white/light) */
+.eptoggle button.on{ background:#2b3138; color:#ffffff; }
 
 .pinfo{ padding:40px 18px 18px; }
 .pname{ font-size:22px; font-weight:800; letter-spacing:-.01em; }
@@ -102,6 +104,7 @@ html.t-bright .ptag{ background:#e9ebef; color:#3b4150; }
 html.t-bright .phead .hicon{ background:#ffffff; border:1px solid rgba(0,0,0,.12); color:#16181d; }
 html.t-bright .eptoggle{ background:rgba(255,255,255,.85); border-color:rgba(0,0,0,.12); }
 html.t-bright .eptoggle button{ color:#6b7280; }
+html.t-bright .eptoggle button.on{ background:#16181d; color:#ffffff; }   /* dark chip + white text on the white theme */
 html.t-bright .phead .logo svg path{ stroke:#16181d; }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
