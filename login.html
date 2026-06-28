@@ -14,25 +14,30 @@
 /* =========================================================================
    LOGIN PAGE  ·  dot.cards-style  (light theme)
    --------------------------------------------------------------------------
-   • On valid credentials  -> redirects to index.html (home/dashboard)
+   • On valid credentials  -> redirects to dashboard.html
    • On invalid            -> shows "Invalid email or password"
    NOTE: this is a front-end / demo login. Client-side credential checks are
    NOT secure (anyone can read them in the source). For real protection the
    check must happen on a server. Swap the values in the AUTH object below.
+
+   Fully responsive: fluid rem/clamp type, svh/vh height fallback, safe-area
+   insets for notched/gesture phones, 16px inputs (no iOS zoom), 44px touch
+   targets, keyboard scroll-safety, and a centered card on large screens.
    ========================================================================= */
 
 :root{
-  --ink:      #1b1b1f;   /* near-black text         */
-  --muted:    #8a8f98;   /* gray text/placeholder   */
+  --ink:      #1b1b1f;   /* near-black text          */
+  --muted:    #8a8f98;   /* gray text/placeholder    */
   --teal:     #36b3c4;   /* accent (the "Login" word)*/
-  --line:     #e6e7ea;   /* hairline borders        */
-  --field:    #fbfbfc;   /* input background        */
-  --btn:      #2e2e30;   /* dark login button       */
-  --danger:   #e0413f;   /* error text              */
+  --line:     #e6e7ea;   /* hairline borders         */
+  --field:    #fbfbfc;   /* input background         */
+  --btn:      #2e2e30;   /* dark login button        */
+  --danger:   #e0413f;   /* error text               */
   --radius:   14px;
 }
 
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html{ font-size:100%; -webkit-text-size-adjust:100%; }
 html,body{ margin:0; height:100%; }
 
 body{
@@ -40,6 +45,7 @@ body{
   color:var(--ink);
   background:#ffffff;
   display:flex; justify-content:center;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;   /* always reachable when content > viewport */
 }
 
 /* thin peach progress line at the very top (like the reference) */
@@ -51,17 +57,27 @@ body::before{
 /* phone-width centered column */
 .page{
   width:100%; max-width:460px;
-  min-height:100dvh;
+  min-height:100vh;    /* fallback for browsers without svh (Samsung Internet <19 / Chrome <108) */
+  min-height:100svh;   /* modern: stays correct when the keyboard / dynamic toolbar appears */
   display:flex; flex-direction:column;
-  border-left:1px solid var(--line);
-  border-right:1px solid var(--line);
 }
 
 /* ---------- content ---------- */
-.content{ flex:1; display:flex; flex-direction:column; padding:40px 22px 24px; }
+.content{
+  flex:1; display:flex; flex-direction:column;
+  /* fluid vertical rhythm (clamps to the original 40/24px on tall phones,
+     shrinks on short/landscape) + safe-area insets so nothing hides under
+     the notch, status bar, home indicator or gesture nav. env() = 0 when
+     there is no inset, so non-notched devices look identical. */
+  padding:
+    calc(clamp(16px, 5vh, 40px) + env(safe-area-inset-top))
+    max(22px, env(safe-area-inset-right))
+    calc(clamp(16px, 3vh, 24px) + env(safe-area-inset-bottom))
+    max(22px, env(safe-area-inset-left));
+}
 
-.title{ text-align:center; font-size:26px; font-weight:700; margin:0 0 6px; }
-.subtitle{ text-align:center; font-size:14.5px; color:var(--muted); margin:0 0 26px; }
+.title{ text-align:center; font-size:clamp(1.375rem, 1.2rem + 1vw, 1.625rem); font-weight:700; margin:0 0 6px; }
+.subtitle{ text-align:center; font-size:0.9rem; color:var(--muted); margin:0 0 26px; }
 .subtitle .teal{ color:var(--teal); font-weight:500; }
 
 /* ---------- card ---------- */
@@ -72,28 +88,35 @@ body::before{
 }
 
 .field{ margin-bottom:18px; }
-.label{ font-size:13.5px; font-weight:600; margin-bottom:8px; }
+.label{ font-size:0.85rem; font-weight:600; margin-bottom:8px; }
 
 .input-wrap{ position:relative; display:flex; align-items:center; }
 .input-wrap input{
-  width:100%; font-family:inherit; font-size:15px; color:var(--ink);
+  width:100%; font-family:inherit; font-size:1rem; color:var(--ink);   /* 1rem = 16px -> prevents iOS focus auto-zoom */
   background:var(--field); border:1px solid var(--line); border-radius:var(--radius);
-  padding:13px 44px 13px 14px; outline:none; transition:.15s;
+  padding:13px 48px 13px 14px; outline:none; transition:.15s;
+  -webkit-appearance:none; appearance:none;   /* drop iOS native inner shadow / rounding */
 }
 .input-wrap input::placeholder{ color:#b3b7bd; }
 .input-wrap input:focus{ border-color:var(--teal); background:#fff; box-shadow:0 0 0 3px rgba(54,179,196,.12); }
 
 .in-icon{
-  position:absolute; right:10px; width:30px; height:30px;
+  position:absolute; right:6px; width:44px; height:44px;   /* >=44px tap target; glyph stays centered & same size */
   display:grid; place-items:center; color:var(--muted);
   background:none; border:none; cursor:pointer; padding:0;
 }
 .in-icon:active{ transform:scale(.9); }
 
+/* visible keyboard focus (does not affect mouse/touch) */
+.login-btn:focus-visible,
+.in-icon:focus-visible,
+.forgot:focus-visible,
+.input-wrap input:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
 /* error message */
 .error{
   display:none; align-items:center; gap:7px;
-  color:var(--danger); font-size:13px; font-weight:500;
+  color:var(--danger); font-size:0.8rem; font-weight:500;
   margin:2px 2px 14px;
 }
 .error.show{ display:flex; }
@@ -102,7 +125,8 @@ body::before{
 /* forgot password */
 .forgot{
   display:flex; justify-content:flex-end; align-items:center; gap:6px;
-  margin:14px 2px 0; font-size:13.5px; font-weight:600; color:var(--ink);
+  margin:8px 2px 0; padding:6px 2px; min-height:44px;   /* larger tap target, same visual position */
+  font-size:0.85rem; font-weight:600; color:var(--ink);
   text-decoration:none;
 }
 .forgot:hover{ color:var(--teal); }
@@ -110,14 +134,34 @@ body::before{
 /* ---------- login button (pinned to bottom) ---------- */
 .login-btn{
   margin-top:auto;
-  width:100%; height:56px; border:none; border-radius:14px; cursor:pointer;
-  background:var(--btn); color:#fff; font-family:inherit; font-size:16px; font-weight:600;
+  width:100%; min-height:56px; padding-block:16px;   /* grows instead of clipping when text is enlarged */
+  border:none; border-radius:14px; cursor:pointer;
+  background:var(--btn); color:#fff; font-family:inherit; font-size:1rem; font-weight:600;
   letter-spacing:.01em; transition:.15s;
   box-shadow:0 8px 20px rgba(46,46,48,.28);
 }
 .login-btn:hover{ background:#1f1f21; }
 .login-btn:active{ transform:translateY(1px); }
 .login-btn:disabled{ opacity:.6; cursor:default; }
+
+/* Draw the framing side borders only when the column is actually inset from
+   the screen edges — avoids stray full-height hairlines at the edges of
+   phones narrower than the 460px column (Galaxy A56, Pixel, Xiaomi, …). */
+@media (min-width:461px){
+  .page{ border-left:1px solid var(--line); border-right:1px solid var(--line); }
+}
+
+/* Tablets / foldables (Z Fold inner) / desktop: a real centered card instead
+   of a full-height strip with a large empty gap above the button. */
+@media (min-width:560px){
+  body{ align-items:center; padding:32px 0; }
+  .page{
+    min-height:0; height:auto; max-height:calc(100svh - 64px);
+    border:1px solid var(--line); border-radius:22px;
+    box-shadow:0 14px 40px rgba(20,20,30,.08); overflow:auto;
+  }
+  .login-btn{ margin-top:32px; }
+}
 </style>
 <!-- Firebase: real owner-only security (stays local-only until firebase-config.js is filled in) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -195,8 +239,13 @@ form.addEventListener('submit', function(e){
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
   const pass  = document.getElementById('password').value;
-  const fail = ()=>{ btn.disabled=false; btn.textContent='Log In'; errEl.classList.add('show');
-    btn.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:240}); };
+  const fail = ()=>{
+    btn.disabled=false; btn.textContent='Log In'; errEl.classList.add('show');
+    /* skip the shake for users who prefer reduced motion */
+    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      btn.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:240});
+    }
+  };
 
   // ---- Firebase auth (real, server-verified) when configured ----
   if(window.FB_ON){
